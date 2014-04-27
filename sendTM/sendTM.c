@@ -102,8 +102,8 @@ int main (int argc, char ** argv){
 	int ldisc = N_HDLC;
 	MGSL_PARAMS params;
 	int size = 1024;
-	unsigned char databuf[1024];
-    unsigned char temp[1024];
+	unsigned char databuf[1025];    //RTS changed buffer from 1024 to account for null chars
+    unsigned char temp[1025];           //RTS changed buffer from 1024 to account for null chars
 	char *devname;
     char *imagename;
     FILE *fp;
@@ -249,7 +249,7 @@ int main (int argc, char ** argv){
 
     printf("Sending data...\n");
     gettimeofday(&time_begin, NULL);    //Determine elapsed time for file write to TM
-    while(fgets(databuf, size, fp) != NULL){
+    while(fgets(databuf, size + 1, fp) != NULL){        //RTS changed buffer from 1024 to account for null chars
         if (count == 10) memcpy(temp, databuf, size);  //Store the contents of databuf
                                                        //into the temp buffer
 		rc = write(fd, databuf, size);
