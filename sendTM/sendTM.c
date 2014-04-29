@@ -210,7 +210,7 @@ int main (int argc, char ** argv){
 
 	/* set transmit idle pattern (sent between frames) */
 	//idle = HDLC_TXIDLE_ALT_ZEROS_ONES;
-        idle = HDLC_TXIDLE_CUSTOM_8 = 'R';
+        idle = HDLC_TXIDLE_CUSTOM_8 + 'R';
 	rc = ioctl(fd, MGSL_IOCSTXIDLE, idle);
 	if (rc < 0) {
 		printf("ioctl(MGSL_IOCSTXIDLE) error=%d %s\n",
