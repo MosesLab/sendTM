@@ -199,6 +199,8 @@ int main (int argc, char ** argv){
 	params.encoding = HDLC_ENCODING_NRZ;
 	params.clock_speed = 10000000;
 	params.crc_type = HDLC_CRC_NONE;
+        params.preamble = HDLC_PREAMBLE_PATTERN_ONES;
+        params.preamble_length = HDLC_PREAMBLE_LENGTH_16BITS
 
 	/* set current device parameters */
 	rc = ioctl(fd, MGSL_IOCSPARAMS, &params);
@@ -210,7 +212,7 @@ int main (int argc, char ** argv){
 
 	/* set transmit idle pattern (sent between frames) */
 	//idle = HDLC_TXIDLE_ALT_ZEROS_ONES;
-        idle = HDLC_TXIDLE_CUSTOM_8 + 0xcc;
+        idle = HDLC_TXIDLE_CUSTOM_8 + 0xff;
 	rc = ioctl(fd, MGSL_IOCSTXIDLE, idle);
 	if (rc < 0) {
 		printf("ioctl(MGSL_IOCSTXIDLE) error=%d %s\n",
