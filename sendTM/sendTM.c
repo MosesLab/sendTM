@@ -200,7 +200,7 @@ int main (int argc, char ** argv){
 	params.clock_speed = 10000000;
 	params.crc_type = HDLC_CRC_NONE;
         params.preamble = HDLC_PREAMBLE_PATTERN_ONES;
-        params.preamble_length = HDLC_PREAMBLE_LENGTH_16BITS
+        params.preamble_length = HDLC_PREAMBLE_LENGTH_16BITS;
 
 	/* set current device parameters */
 	rc = ioctl(fd, MGSL_IOCSPARAMS, &params);
