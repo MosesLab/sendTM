@@ -243,6 +243,10 @@ int main(int argc, char ** argv) {
                     errno, strerror(errno));
             return rc;
         }
+        
+        /*enable transmitter*/
+        int enable = 1;
+        rc = ioctl(fd, MGSL_IOCTXENABLE, enable);
 
         /* Write imagefile to TM. This requires reading a set number of bytes (1024 currently)
          * from the file into the data buffer, then sending the data buffer to the device 
