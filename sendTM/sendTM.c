@@ -289,6 +289,8 @@ int main(int argc, char ** argv) {
                 printf("write error=%d %s\n", errno, strerror(errno));
                 break;
             }
+        /* block until all data sent */
+            rc = tcdrain(fd);
         if (rc < 0) return rc; //Finishes the write error handling after the break
 
         gettimeofday(&time_end, NULL); //Timing
