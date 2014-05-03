@@ -285,13 +285,13 @@ int main(int argc, char ** argv) {
             count++;
         }
         if (rc < 0) return rc; //Finishes the write error handling after the break
-        rc = write(fd, endbuf, 5);
-        if (rc < 0) {
-                printf("write error=%d %s\n", errno, strerror(errno));
-                break;
-            }
-        /* block until all data sent */
-            rc = tcdrain(fd);
+//        rc = write(fd, endbuf, 5);
+//        if (rc < 0) {
+//                printf("write error=%d %s\n", errno, strerror(errno));
+//                break;
+//            }
+//        /* block until all data sent */
+//            rc = tcdrain(fd);
         
 
         gettimeofday(&time_end, NULL); //Timing
