@@ -284,7 +284,7 @@ int main(int argc, char ** argv) {
             rc = tcdrain(fd);
             count++;
         }
-        rc = write(fd, endbuf, 1);
+        rc = write(fd, &endbuf, 1);
         if (rc < 0) return rc; //Finishes the write error handling after the break
 
         gettimeofday(&time_end, NULL); //Timing
