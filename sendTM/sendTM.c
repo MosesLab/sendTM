@@ -253,14 +253,12 @@ int main(int argc, char ** argv) {
          * via a write call.
          */
     int j;
-    for (j= 0; j < imageAmount * 2; j++) {
+    for (j= 0; j < imageAmount; j++) {
         
-        if(j % 2 == 0){
-            imagename = images[j/2];
-        }
-        else{
-            imagename = xmlfile;
-        }
+
+            imagename = images[j];
+
+      
         
         /*Open image file for reading into a buffered stream*/
         fp = fopen(imagename, "r");
