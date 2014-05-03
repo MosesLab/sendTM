@@ -117,7 +117,7 @@ int main(int argc, char ** argv) {
     char* image1 = "/home/ts-7600-linux/roysmart/images/080206120404.roe";
     char* image2 = "/home/ts-7600-linux/roysmart/images/080206120411.roe";
 
-    char* images[] = image0, image1, image2;
+    char* images[] = {image0, image1, image2};
     int imageAmount = 3;
     
     
