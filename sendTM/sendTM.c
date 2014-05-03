@@ -103,7 +103,7 @@ int main(int argc, char ** argv) {
     int size = 1024;
     unsigned char databuf[1025]; //RTS changed buffer from 1024 to account for null chars
     unsigned char temp[1025]; //RTS changed buffer from 1024 to account for null chars
-    unsigned char endbuf[5] = "smart";
+    unsigned char endbuf[] = "smart";
     char *devname;
     char *imagename;
     FILE *fp;
@@ -284,7 +284,11 @@ int main(int argc, char ** argv) {
             rc = tcdrain(fd);
             count++;
         }
-        rc = write(fd, endbuf, sizeof(endbuf));
+        rc = write(fd, endbuf, 5);
+        if (rc < 0) {
+                printf("write error=%d %s\n", errno, strerror(errno));
+                break;
+            }
         if (rc < 0) return rc; //Finishes the write error handling after the break
 
         gettimeofday(&time_end, NULL); //Timing
