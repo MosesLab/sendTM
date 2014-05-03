@@ -209,7 +209,6 @@ int main(int argc, char ** argv) {
     params.encoding = HDLC_ENCODING_NRZ;
     params.clock_speed = 10000000;
     params.crc_type = HDLC_CRC_16_CCITT | HDLC_CRC_RETURN_EX;
-    ;
     params.preamble = HDLC_PREAMBLE_PATTERN_ONES;
     params.preamble_length = HDLC_PREAMBLE_LENGTH_16BITS;
 
@@ -222,7 +221,8 @@ int main(int argc, char ** argv) {
     }
 
     /* set transmit idle pattern (sent between frames) */
-    idle = HDLC_TXIDLE_ALT_ZEROS_ONES;
+    //idle = HDLC_TXIDLE_ALT_ZEROS_ONES;
+    idle = HDLC_TXIDLE_CUSTOM_8 + 0xaa;
     rc = ioctl(fd, MGSL_IOCSTXIDLE, idle);
     if (rc < 0) {
         printf("ioctl(MGSL_IOCSTXIDLE) error=%d %s\n",
@@ -250,7 +250,7 @@ int main(int argc, char ** argv) {
          */
     int j;
     for (j= 0; j < imageAmount * 2; j++) {
-
+        
         if(j % 2 == 0){
             imagename = images[j/2];
         }
@@ -270,6 +270,7 @@ int main(int argc, char ** argv) {
             printf("setvbuf error=%d %s\n", errno, strerror(errno));
             return rc;
         }
+        
         printf("Sending data...\n");
         gettimeofday(&time_begin, NULL); //Determine elapsed time for file write to TM
         while (fgets(databuf, size + 1, fp) != NULL) { //RTS changed buffer from 1024 to account for null chars
