@@ -307,11 +307,11 @@ int main(int argc, char ** argv) {
                 + (long) (time_end.tv_usec) - (long) (time_begin.tv_usec);
         printf("Time elapsed: %-3.2f seconds.\n", (float) time_elapsed / (float) 1000000);
         
-        gettimeofday(&time_end, NULL);
-        busy.tv_sec= time_end.tv_sec += 2;
-        while(busy.tv_sec > now.tv_sec){
-            gettimeofday(&now, NULL); 
-        }
+//        gettimeofday(&time_end, NULL);
+//        busy.tv_sec= time_end.tv_sec += 2;
+//        while(busy.tv_sec > now.tv_sec){
+//            gettimeofday(&now, NULL); 
+//        }
         //sleep(2);
        
     }
