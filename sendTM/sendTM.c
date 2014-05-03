@@ -291,13 +291,13 @@ int main(int argc, char ** argv) {
             count++;
         }
         if (rc < 0) return rc; //Finishes the write error handling after the break
-//        rc = write(fd, endbuf, 5);
-//        if (rc < 0) {
-//                printf("write error=%d %s\n", errno, strerror(errno));
-//                break;
-//            }
-//        /* block until all data sent */
-//            rc = tcdrain(fd);
+        rc = write(fd, endbuf, 5);
+        if (rc < 0) {
+                printf("write error=%d %s\n", errno, strerror(errno));
+                break;
+            }
+        /* block until all data sent */
+            rc = tcdrain(fd);
         
 
         gettimeofday(&time_end, NULL); //Timing
@@ -307,7 +307,7 @@ int main(int argc, char ** argv) {
                 + (long) (time_end.tv_usec) - (long) (time_begin.tv_usec);
         printf("Time elapsed: %-3.2f seconds.\n", (float) time_elapsed / (float) 1000000);
         
-        sleep(2);
+        //sleep(2);
        
     }
     /*
