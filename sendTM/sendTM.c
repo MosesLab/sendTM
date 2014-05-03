@@ -117,7 +117,7 @@ int main(int argc, char ** argv) {
     char* image1 = "/home/ts-7600-linux/roysmart/images/080206120404.roe";
     char* image2 = "/home/ts-7600-linux/roysmart/images/080206120411.roe";
     
-    char* fakePreamble = 0xffff;
+    int fakePreamble = 0xffff;
 
     char* images[] = {image1, image0, image2};
     int imageAmount = 3;
@@ -275,7 +275,7 @@ int main(int argc, char ** argv) {
             return rc;
         }
         /*send fake preamble*/
-        rc = write(fd, fakePreamble, 2);
+        rc = write(fd, &fakePreamble, 2);
         printf("Sending data...\n");
         gettimeofday(&time_begin, NULL); //Determine elapsed time for file write to TM
         while (fgets(databuf, size + 1, fp) != NULL) { //RTS changed buffer from 1024 to account for null chars
