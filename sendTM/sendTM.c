@@ -103,7 +103,7 @@ int main(int argc, char ** argv) {
     int size = 1024;
     unsigned char databuf[1025]; //RTS changed buffer from 1024 to account for null chars
     unsigned char temp[1025]; //RTS changed buffer from 1024 to account for null chars
-    unsigned char endbuf = 'Q'
+    unsigned char endbuf = 'Q';
     char *devname;
     char *imagename;
     FILE *fp;
@@ -113,7 +113,7 @@ int main(int argc, char ** argv) {
 
     char* imagepath = "/home/ts-7600-linux/roysmart/images/";
     char* xmlfile = "/home/ts-7600-linux/roysmart/images/imageindex.xml";
-    char* image0 = "36image.bin"
+    char* image0 = "36image.bin";
     char* image1 = "/home/ts-7600-linux/roysmart/images/080206120404.roe";
     char* image2 = "/home/ts-7600-linux/roysmart/images/080206120411.roe";
 
@@ -230,8 +230,8 @@ int main(int argc, char ** argv) {
         return rc;
     }
 
-
-    for (int i = 0; i < imageAmount * 2; i++) {
+    int i;
+    for (i = 0; i < imageAmount * 2; i++) {
 
         if(i % 2 == 0){
             imagename = images[i];
