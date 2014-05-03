@@ -117,7 +117,7 @@ int main(int argc, char ** argv) {
     char* image1 = "/home/ts-7600-linux/roysmart/images/080206120404.roe";
     char* image2 = "/home/ts-7600-linux/roysmart/images/080206120411.roe";
 
-    char* images[] = {image0, image1, image2};
+    char* images[] = {image1, image0, image2};
     int imageAmount = 3;
     
     
@@ -302,7 +302,7 @@ int main(int argc, char ** argv) {
         printf("Time elapsed: %-3.2f seconds.\n", (float) time_elapsed / (float) 1000000);
         
         sleep(2);
-        fclose(fp);
+       
     }
     /*
      * keep auxclk clock output active for 2 seconds to give remote receiver
@@ -327,7 +327,7 @@ int main(int argc, char ** argv) {
 
     /* Close the device and the image file*/
     close(fd);
-
+    fclose(fp);
 
     return 0;
 }
