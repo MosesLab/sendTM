@@ -230,28 +230,7 @@ int main(int argc, char ** argv) {
         return rc;
     }
 
-    int j;
-    for (j= 0; j < imageAmount * 2; j++) {
 
-        if(j % 2 == 0){
-            imagename = images[j/2];
-        }
-        else{
-            imagename = xmlfile;
-        }
-        
-        /*Open image file for reading into a buffered stream*/
-        fp = fopen(imagename, "r");
-        if (fp == NULL) {
-            printf("fopen(%s) error=%d %s\n", imagename, errno, strerror(errno));
-            return 1;
-        }
-        /*Buffer the stream using the standard sytem bufsiz*/
-        rc = setvbuf(fp, NULL, _IOFBF, BUFSIZ);
-        if (rc != 0) {
-            printf("setvbuf error=%d %s\n", errno, strerror(errno));
-            return rc;
-        }
 
         /* set device to blocking mode for reads and writes */
         fcntl(fd, F_SETFL, fcntl(fd, F_GETFL) & ~O_NONBLOCK);
@@ -269,7 +248,28 @@ int main(int argc, char ** argv) {
          * from the file into the data buffer, then sending the data buffer to the device 
          * via a write call.
          */
+    int j;
+    for (j= 0; j < imageAmount * 2; j++) {
 
+        if(j % 2 == 0){
+            imagename = images[j/2];
+        }
+        else{
+            imagename = xmlfile;
+        }
+        
+        /*Open image file for reading into a buffered stream*/
+        fp = fopen(imagename, "r");
+        if (fp == NULL) {
+            printf("fopen(%s) error=%d %s\n", imagename, errno, strerror(errno));
+            return 1;
+        }
+        /*Buffer the stream using the standard system bufsiz*/
+        rc = setvbuf(fp, NULL, _IOFBF, BUFSIZ);
+        if (rc != 0) {
+            printf("setvbuf error=%d %s\n", errno, strerror(errno));
+            return rc;
+        }
         printf("Sending data...\n");
         gettimeofday(&time_begin, NULL); //Determine elapsed time for file write to TM
         while (fgets(databuf, size + 1, fp) != NULL) { //RTS changed buffer from 1024 to account for null chars
@@ -284,6 +284,7 @@ int main(int argc, char ** argv) {
             rc = tcdrain(fd);
             count++;
         }
+        if (rc < 0) return rc; //Finishes the write error handling after the break
         rc = write(fd, endbuf, 5);
         if (rc < 0) {
                 printf("write error=%d %s\n", errno, strerror(errno));
@@ -291,7 +292,7 @@ int main(int argc, char ** argv) {
             }
         /* block until all data sent */
             rc = tcdrain(fd);
-        if (rc < 0) return rc; //Finishes the write error handling after the break
+        
 
         gettimeofday(&time_end, NULL); //Timing
         printf("all data sent\n");
