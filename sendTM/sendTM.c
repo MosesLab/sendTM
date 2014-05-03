@@ -230,11 +230,11 @@ int main(int argc, char ** argv) {
         return rc;
     }
 
-    int i;
-    for (i = 0; i < imageAmount * 2; i++) {
+    int j;
+    for (j= 0; j < imageAmount * 2; j++) {
 
-        if(i % 2 == 0){
-            imagename = images[i];
+        if(j % 2 == 0){
+            imagename = images[j/2];
         }
         else{
             imagename = xmlfile;
