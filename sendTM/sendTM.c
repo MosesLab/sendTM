@@ -101,8 +101,8 @@ int main(int argc, char ** argv) {
     int ldisc = N_HDLC;
     MGSL_PARAMS params;
     int size = 1024;
-    unsigned char databuf[1025]; //RTS changed buffer from 1024 to account for null chars
-    unsigned char temp[1025]; //RTS changed buffer from 1024 to account for null chars
+    unsigned char databuf[1024]; //RTS changed buffer from 1024 to account for null chars
+    unsigned char temp[1024]; //RTS changed buffer from 1024 to account for null chars
     unsigned char endbuf[] = "smart";
     char *devname;
     char *imagename;
@@ -116,20 +116,21 @@ int main(int argc, char ** argv) {
     char* image0 = "36image.bin";
     char* image1 = "/home/ts-7600-linux/roysmart/images/080206120404.roe";
     char* image2 = "/home/ts-7600-linux/roysmart/images/080206120411.roe";
-    
+    char* image3 = "randomimage0.bin";
+
     int fakePreamble = 0xffff;
 
-    char* images[] = {image1, image0, image2};
+    char* images[] = {image0, image1, image2};
     int imageAmount = 3;
     
     
     
     /*Check for correct arguments*/
-    if (argc > 3 || argc < 2) {
-        printf("Incorrect number of arguments\n");
-        display_usage();
-        return 1;
-    }
+//    if (argc > 3 || argc < 2) {
+//        printf("Incorrect number of arguments\n");
+//        display_usage();
+//        return 1;
+//    }
 
     /*Set device name, either from command line or use default value*/
     if (argc == 3)
@@ -138,10 +139,10 @@ int main(int argc, char ** argv) {
         devname = "/dev/ttyUSB0"; //Set the default name of the SyncLink device
 
     /*Set image filename from command line*/
-    if (argc == 3)
-        imagename = argv[2];
-    else
-        imagename = argv[1];
+//    if (argc == 3)
+//        imageAmount = argv[2];
+//    else
+//        imageAmount = argv[1];
 
     /* Fork and exec the fsynth program to set the clock source on the SyncLink
      * to use the synthesized 20 MHz clock from the onboard frequency synthesizer
@@ -223,8 +224,8 @@ int main(int argc, char ** argv) {
     }
 
     /* set transmit idle pattern (sent between frames) */
-    //idle = HDLC_TXIDLE_ALT_ZEROS_ONES;
-    idle = HDLC_TXIDLE_CUSTOM_8 + 0xaa;
+    idle = HDLC_TXIDLE_ALT_ZEROS_ONES;
+    //idle = HDLC_TXIDLE_CUSTOM_8 + 0xaa;
     rc = ioctl(fd, MGSL_IOCSTXIDLE, idle);
     if (rc < 0) {
         printf("ioctl(MGSL_IOCSTXIDLE) error=%d %s\n",
@@ -256,7 +257,7 @@ int main(int argc, char ** argv) {
          */
     int j;
     for (j= 0; j < imageAmount; j++) {
-        
+        count = 0;
 
             imagename = images[j];
 
@@ -277,7 +278,7 @@ int main(int argc, char ** argv) {
         
         printf("Sending data...\n");
         gettimeofday(&time_begin, NULL); //Determine elapsed time for file write to TM
-        while (fgets(databuf, size + 1, fp) != NULL) { //RTS changed buffer from 1024 to account for null chars
+        while (fread(databuf, 1,  size, fp) > 0) { //RTS changed buffer from 1024 to account for null chars
             if (count == 10) memcpy(temp, databuf, size); //Store the contents of databuf
             //into the temp buffer
             rc = write(fd, databuf, size);
@@ -295,9 +296,13 @@ int main(int argc, char ** argv) {
                 printf("write error=%d %s\n", errno, strerror(errno));
                 break;
             }
-        /* block until all data sent */
-            rc = tcdrain(fd);
-        
+
+        /*block until all data sent*/
+	rc = tcdrain(fd);
+
+	/*clear the data buffer*/
+	fflush(fp);
+
 
         gettimeofday(&time_end, NULL); //Timing
         printf("all data sent\n");
