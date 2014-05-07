@@ -117,11 +117,16 @@ int main(int argc, char ** argv) {
     char* image1 = "/home/ts-7600-linux/roysmart/images/080206120404.roe";
     char* image2 = "/home/ts-7600-linux/roysmart/images/080206120411.roe";
     char* image3 = "randomimage0.bin";
+    char* image4 = "/home/ts-7600-linux/roysmart/images/080206120418.roe";
+    char* image5 = "/home/ts-7600-linux/roysmart/images/080206120428.roe";
+    char* image6 = "/home/ts-7600-linux/roysmart/images/080206120440.roe";
+    char* image7 = "/home/ts-7600-linux/roysmart/images/080206120458.roe";
+    char* image8 = "/home/ts-7600-linux/roysmart/images/080206120529.roe";
 
     int fakePreamble = 0xffff;
 
-    char* images[] = {image0, image1, image2};
-    int imageAmount = 3;
+    char* images[] = {image0, image1, image2, image3, image4, image5, image6, image7, image8};
+    int imageAmount = 16;
     
     
     
@@ -258,8 +263,10 @@ int main(int argc, char ** argv) {
     int j;
     for (j= 0; j < imageAmount; j++) {
         count = 0;
-
-            imagename = images[j];
+	if(j % 2 == 0){
+            imagename = images[j/2];
+	}
+	else imagename = xmlfile;
 
       
         
@@ -330,7 +337,7 @@ int main(int argc, char ** argv) {
      * file.
      */
 
-    printf("Bytes from the 10th write printed (as ASCII characters): %s\n", temp);
+////    printf("Bytes from the 10th write printed (as ASCII characters): %s\n", temp);
 
     printf("Turn off RTS and DTR\n");
     sigs = TIOCM_RTS + TIOCM_DTR;
