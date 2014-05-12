@@ -274,6 +274,7 @@ int main(int argc, char ** argv) {
 
         printf("Sending data...\n");
         gettimeofday(&time_begin, NULL); //Determine elapsed time for file write to TM
+        int totalSize = 0;
         unsigned int rd = fread(databuf, 1, size, fp);
         while (rd > 0) { //RTS changed buffer reading function from fgets to fread to allow for binary data
             if (count == 10) memcpy(temp, databuf, size); //Store the contents of databuf
@@ -286,6 +287,7 @@ int main(int argc, char ** argv) {
             /* block until all data sent */
             rc = tcdrain(fd);
             count++;
+            totalSize += rd;
             rd = fread(databuf, 1, size, fp);
         }
         if (rc < 0) return rc; //Finishes the write error handling after the break
@@ -304,7 +306,7 @@ int main(int argc, char ** argv) {
 
         gettimeofday(&time_end, NULL); //Timing
         printf("all data sent\n");
-        printf("Sent %d bytes of data from file %s.\n", count*size, imagename);
+        printf("Sent %d bytes of data from file %s.\n", totalSize, imagename);
         time_elapsed = 1000000 * ((long) (time_end.tv_sec) - (long) (time_begin.tv_sec))
                 + (long) (time_end.tv_usec) - (long) (time_begin.tv_usec);
         printf("Time elapsed: %-3.2f seconds.\n", (float) time_elapsed / (float) 1000000);
