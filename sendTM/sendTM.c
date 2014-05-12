@@ -4,8 +4,8 @@
  * Author: Jacob Plovanic, Roy Smart
  * History:
  *  Created Dec 17 2013
- *  Tested  Dec 18 2013 (See results below)
- *  Tested May 12 2014 successfully at White Sands Missile Range
+ *  Tested  Dec 18 2013 
+ *  Tested May 12 2014 successfully at White Sands Missile Range (See results below)
  *
  * Uses the Microgate USB SyncLink adapter to achieve synchronous serial speeds
  * of 10 Mbps to downlink MOSES science data. The data are contained in 16 MB 
@@ -35,30 +35,32 @@
  *    gcc -mtune=arm9 -ggdb3 sendTM.c -o sendTM
  *
  * Test Results:
- *  ./sendTM /dev/ttyUSB0 /home/ts-7600-linux/jake/36image.bin 
- * 	fsynth device=/dev/ttyUSB0
- * 	USB device detected
- * 	Found programming information for output frequency = 20000000Hz
- * 	send HDLC data on /dev/ttyUSB0
- * 	Turn on RTS and DTR serial outputs
- * 	Sending data...
- * 	all data sent
- * 	Sent 16794624 bytes of data from file /home/ts-7600-linux/jake/36image.bin.
- * 	Time elapsed: 13.51 seconds.
- * 	Bytes from the 10th write printed (as ASCII characters): $
- * 	Turn off RTS and DTR
+ *      ./sendtm 
+ *       fsynth device=/dev/ttyUSB0
+ *       USB device detected
+ *       Found programming information for output frequency = 20000000Hz
+ *       send HDLC data on /dev/ttyUSB0
+ *       Turn on RTS and DTR serial outputs
+ *       Sending data...
+ *       all data sent
+ *       Sent 16777216 bytes of data from file 36image.bin.
+ *       Time elapsed: 13.58 seconds.
+ *       Sending data...
+ *       all data sent
+ *       Sent 28672 bytes of data from file /home/ts-7600-linux/roysmart/images/imageindex.xml.
+ *       Time elapsed: 0.02 seconds.
+ *
  *
  *  The 13.51 seconds is consistent with a 10 Mbps data rate for 16 MB of data. It
  *  looks like there is very little time used to get the data through the USB. The
- *  16794624 bytes sent is larger than the size of the file by 17408 bytes (Debian
- *  reports that the size of 36image.bin is 16777216 bytes). This 
- *  might be due to how fgets() interprets certain characters when it fills the data
- *  buffer for writing, e.g. it's adding an extraneous character to the data buffer
- *  that's not actually in the file. The data file used is repeated instances of
- *  (short)36, which in binary is 0000000000100100 and in char is NULL $. I tried to
- *  print out the data array as a string, but since strings are NULL terminated arrays
- *  the printf() call thinks that there's only one $ in the data buffer when there are
- *  512.
+ *  16777216 bytes sent is the same size as the file reported by Debian. 
+ * 
+ * In previous implementations of this code, the buffer holding the images was read using the 
+ * function fets(). This function was incorrect as it didn't treat chars the same as all other bytes.
+ * Testing revealed that the code was correctly sending chars, but other bytes were being replaced 
+ * by random data. This problem was rectified by using the function fread() to parse the buffer in a 
+ * binary fashion.
+ * 
  *
  ******************************************************************************/
 
