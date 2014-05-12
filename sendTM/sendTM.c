@@ -115,19 +115,17 @@ int main(int argc, char ** argv) {
 
     char* imagepath = "/home/ts-7600-linux/roysmart/images/";
     char* xmlfile = "/home/ts-7600-linux/roysmart/images/imageindex.xml";
-    char* image0 = "36image.bin";
-    char* image1 = "/home/ts-7600-linux/roysmart/images/080206120404.roe";
-    char* image2 = "/home/ts-7600-linux/roysmart/images/080206120411.roe";
-    char* image3 = "randomimage0.bin";
-    char* image4 = "/home/ts-7600-linux/roysmart/images/080206120418.roe";
-    char* image5 = "/home/ts-7600-linux/roysmart/images/080206120428.roe";
-    char* image6 = "/home/ts-7600-linux/roysmart/images/080206120440.roe";
-    char* image7 = "/home/ts-7600-linux/roysmart/images/080206120458.roe";
-    char* image8 = "/home/ts-7600-linux/roysmart/images/080206120529.roe";
+    char* image0 = "/home/ts-7600-linux/roysmart/images/080206120404.roe";
+    char* image1 = "/home/ts-7600-linux/roysmart/images/080206120411.roe";
+    char* image2 = "/home/ts-7600-linux/roysmart/images/080206120418.roe";
+    char* image3 = "/home/ts-7600-linux/roysmart/images/080206120428.roe";
+    char* image4 = "/home/ts-7600-linux/roysmart/images/080206120440.roe";
+    char* image5 = "/home/ts-7600-linux/roysmart/images/080206120458.roe";
+    char* image6 = "/home/ts-7600-linux/roysmart/images/080206120529.roe";
 
     /*image queue*/
-    char* images[] = {image0, image1, image2, image3, image4, image5, image6, image7, image8};
-    int imageAmount = 16;
+    char* images[] = {image0, image1, image2, image3, image4, image5, image6};
+    int imageAmount = 14;
 
 
 
