@@ -1,10 +1,11 @@
 /********************************************************************************
  * MOSES telemetry downlink test code
  *
- * Author: Jacob Plovanic
+ * Author: Jacob Plovanic, Roy Smart
  * History:
  *  Created Dec 17 2013
  *  Tested  Dec 18 2013 (See results below)
+ *  Tested May 12 2014 successfully at White Sands Missile Range
  *
  * Uses the Microgate USB SyncLink adapter to achieve synchronous serial speeds
  * of 10 Mbps to downlink MOSES science data. The data are contained in 16 MB 
@@ -85,10 +86,9 @@
 
 /*Function to demonstrate correct command line input*/
 void display_usage(void) {
-    printf("Usage: sendTM <devname> <imagename>\n"
+    printf("Usage: sendTM <devname> \n"
             "devname = device name (optional) (e.g. /dev/ttyUSB0 etc. "
-            "Default is /dev/ttyUSB0)\n"
-            "imagename = name of binary file to be sent over TM (e.g. image.roe)\n");
+            "Default is /dev/ttyUSB0)\n");
 }
 
 /*Program entry point*/
@@ -101,14 +101,14 @@ int main(int argc, char ** argv) {
     int ldisc = N_HDLC;
     MGSL_PARAMS params;
     int size = 1024;
-    unsigned char databuf[1024]; //RTS changed buffer from 1024 to account for null chars
-    unsigned char temp[1024]; //RTS changed buffer from 1024 to account for null chars
-    unsigned char endbuf[] = "smart";
+    unsigned char databuf[1024];
+    unsigned char temp[1024];
+    unsigned char endbuf[] = "smart"; //Used this string as end-frame to terminate seperate files
     char *devname;
     char *imagename;
     FILE *fp;
     int count = 0; //Number to determine how much data is sent
-    struct timeval time_begin, time_end, busy, now;
+    struct timeval time_begin, time_end;
     int time_elapsed;
 
     char* imagepath = "/home/ts-7600-linux/roysmart/images/";
@@ -123,31 +123,24 @@ int main(int argc, char ** argv) {
     char* image7 = "/home/ts-7600-linux/roysmart/images/080206120458.roe";
     char* image8 = "/home/ts-7600-linux/roysmart/images/080206120529.roe";
 
-    int fakePreamble = 0xffff;
-
+    /*image queue*/
     char* images[] = {image0, image1, image2, image3, image4, image5, image6, image7, image8};
     int imageAmount = 16;
-    
-    
-    
+
+
+
     /*Check for correct arguments*/
-//    if (argc > 3 || argc < 2) {
-//        printf("Incorrect number of arguments\n");
-//        display_usage();
-//        return 1;
-//    }
+    if (argc > 2 || argc < 1) {
+        printf("Incorrect number of arguments\n");
+        display_usage();
+        return 1;
+    }
 
     /*Set device name, either from command line or use default value*/
     if (argc == 3)
         devname = argv[1];
     else
         devname = "/dev/ttyUSB0"; //Set the default name of the SyncLink device
-
-    /*Set image filename from command line*/
-//    if (argc == 3)
-//        imageAmount = argv[2];
-//    else
-//        imageAmount = argv[1];
 
     /* Fork and exec the fsynth program to set the clock source on the SyncLink
      * to use the synthesized 20 MHz clock from the onboard frequency synthesizer
@@ -240,36 +233,33 @@ int main(int argc, char ** argv) {
 
 
 
-        /* set device to blocking mode for reads and writes */
-        fcntl(fd, F_SETFL, fcntl(fd, F_GETFL) & ~O_NONBLOCK);
+    /* set device to blocking mode for reads and writes */
+    fcntl(fd, F_SETFL, fcntl(fd, F_GETFL) & ~O_NONBLOCK);
 
-        printf("Turn on RTS and DTR serial outputs\n");
-        sigs = TIOCM_RTS + TIOCM_DTR;
-        rc = ioctl(fd, TIOCMBIS, &sigs);
-        if (rc < 0) {
-            printf("assert DTR/RTS error=%d %s\n",
-                    errno, strerror(errno));
-            return rc;
-        }
-        
-        /*enable transmitter*/
-        int enable = 1;
-        rc = ioctl(fd, MGSL_IOCTXENABLE, enable);
+    printf("Turn on RTS and DTR serial outputs\n");
+    sigs = TIOCM_RTS + TIOCM_DTR;
+    rc = ioctl(fd, TIOCMBIS, &sigs);
+    if (rc < 0) {
+        printf("assert DTR/RTS error=%d %s\n",
+                errno, strerror(errno));
+        return rc;
+    }
 
-        /* Write imagefile to TM. This requires reading a set number of bytes (1024 currently)
-         * from the file into the data buffer, then sending the data buffer to the device 
-         * via a write call.
-         */
+    /*enable transmitter*/
+    int enable = 1;
+    rc = ioctl(fd, MGSL_IOCTXENABLE, enable);
+
+    /* Write imagefile to TM. This requires reading a set number of bytes (1024 currently)
+     * from the file into the data buffer, then sending the data buffer to the device 
+     * via a write call.
+     */
     int j;
-    for (j= 0; j < imageAmount; j++) {
+    for (j = 0; j < imageAmount; j++) {
         count = 0;
-	if(j % 2 == 0){
-            imagename = images[j/2];
-	}
-	else imagename = xmlfile;
+        if (j % 2 == 0) {       //If we are on an odd loop send an image
+            imagename = images[j / 2];
+        } else imagename = xmlfile;     //otherwise send an xml file
 
-      
-        
         /*Open image file for reading into a buffered stream*/
         fp = fopen(imagename, "r");
         if (fp == NULL) {
@@ -282,10 +272,10 @@ int main(int argc, char ** argv) {
             printf("setvbuf error=%d %s\n", errno, strerror(errno));
             return rc;
         }
-        
+
         printf("Sending data...\n");
         gettimeofday(&time_begin, NULL); //Determine elapsed time for file write to TM
-        while (fread(databuf, 1,  size, fp) > 0) { //RTS changed buffer from 1024 to account for null chars
+        while (fread(databuf, 1, size, fp) > 0) { //RTS changed buffer reading function from fgets to fread to allow for binary data
             if (count == 10) memcpy(temp, databuf, size); //Store the contents of databuf
             //into the temp buffer
             rc = write(fd, databuf, size);
@@ -300,15 +290,15 @@ int main(int argc, char ** argv) {
         if (rc < 0) return rc; //Finishes the write error handling after the break
         rc = write(fd, endbuf, 5);
         if (rc < 0) {
-                printf("write error=%d %s\n", errno, strerror(errno));
-                break;
-            }
+            printf("write error=%d %s\n", errno, strerror(errno));
+            break;
+        }
 
         /*block until all data sent*/
-	rc = tcdrain(fd);
+        rc = tcdrain(fd);
 
-	/*clear the data buffer*/
-	fflush(fp);
+        /*clear the data buffer*/
+        fflush(fp);
 
 
         gettimeofday(&time_end, NULL); //Timing
@@ -317,14 +307,7 @@ int main(int argc, char ** argv) {
         time_elapsed = 1000000 * ((long) (time_end.tv_sec) - (long) (time_begin.tv_sec))
                 + (long) (time_end.tv_usec) - (long) (time_begin.tv_usec);
         printf("Time elapsed: %-3.2f seconds.\n", (float) time_elapsed / (float) 1000000);
-        
-//        gettimeofday(&time_end, NULL);
-//        busy.tv_sec= time_end.tv_sec += 2;
-//        while(busy.tv_sec > now.tv_sec){
-//            gettimeofday(&now, NULL); 
-//        }
-        //sleep(2);
-       
+
     }
     /*
      * keep auxclk clock output active for 2 seconds to give remote receiver
@@ -337,7 +320,7 @@ int main(int argc, char ** argv) {
      * file.
      */
 
-////    printf("Bytes from the 10th write printed (as ASCII characters): %s\n", temp);
+    ////    printf("Bytes from the 10th write printed (as ASCII characters): %s\n", temp);
 
     printf("Turn off RTS and DTR\n");
     sigs = TIOCM_RTS + TIOCM_DTR;
