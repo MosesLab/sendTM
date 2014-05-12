@@ -274,7 +274,7 @@ int main(int argc, char ** argv) {
 
         printf("Sending data...\n");
         gettimeofday(&time_begin, NULL); //Determine elapsed time for file write to TM
-        int rd = fread(databuf, 1, size, fp);
+        unsigned int rd = fread(databuf, 1, size, fp);
         while (rd > 0) { //RTS changed buffer reading function from fgets to fread to allow for binary data
             if (count == 10) memcpy(temp, databuf, size); //Store the contents of databuf
             //into the temp buffer
