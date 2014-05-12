@@ -223,7 +223,6 @@ int main(int argc, char ** argv) {
 
     /* set transmit idle pattern (sent between frames) */
     idle = HDLC_TXIDLE_ALT_ZEROS_ONES;
-    //idle = HDLC_TXIDLE_CUSTOM_8 + 0xaa;
     rc = ioctl(fd, MGSL_IOCSTXIDLE, idle);
     if (rc < 0) {
         printf("ioctl(MGSL_IOCSTXIDLE) error=%d %s\n",
@@ -275,10 +274,11 @@ int main(int argc, char ** argv) {
 
         printf("Sending data...\n");
         gettimeofday(&time_begin, NULL); //Determine elapsed time for file write to TM
-        while (fread(databuf, 1, size, fp) > 0) { //RTS changed buffer reading function from fgets to fread to allow for binary data
+        int rd = fread(databuf, 1, size, fp);
+        while (rd > 0) { //RTS changed buffer reading function from fgets to fread to allow for binary data
             if (count == 10) memcpy(temp, databuf, size); //Store the contents of databuf
             //into the temp buffer
-            rc = write(fd, databuf, size);
+            rc = write(fd, databuf, rd);
             if (rc < 0) {
                 printf("write error=%d %s\n", errno, strerror(errno));
                 break;
@@ -286,6 +286,7 @@ int main(int argc, char ** argv) {
             /* block until all data sent */
             rc = tcdrain(fd);
             count++;
+            rd = fread(databuf, 1, size, fp);
         }
         if (rc < 0) return rc; //Finishes the write error handling after the break
         rc = write(fd, endbuf, 5);
