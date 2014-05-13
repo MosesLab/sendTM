@@ -5,7 +5,7 @@
  * History:
  *  Created Dec 17 2013
  *  Tested  Dec 18 2013 
- *  Tested May 12 2014 successfully at White Sands Missile Range (See results below)
+ *  Tested May 9 2014 successfully at White Sands Missile Range (See results below)
  *
  * Uses the Microgate USB SyncLink adapter to achieve synchronous serial speeds
  * of 10 Mbps to downlink MOSES science data. The data are contained in 16 MB 
