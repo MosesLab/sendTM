@@ -133,9 +133,9 @@ int main(int argc, char ** argv) {
     }
     imgPtr_t * current = imgList;               //separate pointer for iteration
 
-    char* workingPath = "/students/jackson.remington/esus/testFiles/";
-    char* imagepath = "/students/jackson.remington/esus/testFiles/imageFiles/";
-    char* xmlPath = "/students/jackson.remington/esus/testFiles/xmlFiles/";
+    //char* workingPath = "/home/moses/roysmart/images/";
+    char* imagepath = "/home/moses/roysmart/images/";
+    char* xmlPath = "/home/moses/roysmart/images/";
     
     
     DIR *dir = opendir(imagepath);              //Populate Linked List of nodes
