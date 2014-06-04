@@ -1,7 +1,7 @@
 /********************************************************************************
  * MOSES telemetry downlink test code
  *
- * Author: Jacob Plovanic, Roy Smart
+ * Author: Jacob Plovanic, Roy Smart, Jackson Remington
  * History:
  *  Created Dec 17 2013
  *  Tested  Dec 18 2013 
@@ -56,7 +56,7 @@
  *  16777216 bytes sent is the same size as the file reported by Debian. 
  * 
  * In previous implementations of this code, the buffer holding the images was read using the 
- * function fgets(). This function was incorrect as it didn't treat chars the same as all other bytes.
+ * function fets(). This function was incorrect as it didn't treat chars the same as all other bytes.
  * Testing revealed that the code was correctly sending chars, but other bytes were being replaced 
  * by random data. This problem was rectified by using the function fread() to parse the buffer in a 
  * binary fashion.
@@ -75,6 +75,7 @@
 #include <termios.h>
 #include <errno.h>
 #include <sys/time.h>
+#include <dirent.h>
 
 #include "synclink.h"
 
@@ -106,28 +107,80 @@ int main(int argc, char ** argv) {
     unsigned char databuf[1024];
     unsigned char temp[1024];
     unsigned char endbuf[] = "smart"; //Used this string as end-frame to terminate seperate files
-    char *devname;
-    char *imagename;
+    char *devname = NULL;
+    char *imagename = NULL;
+    char *tmpPath = NULL;
+    char* xmlfile = NULL;
     FILE *fp;
     int count = 0; //Number to determine how much data is sent
     struct timeval time_begin, time_end;
     int time_elapsed;
+    struct dirent *dPath; //For browsing directories
+    
+    typedef int bool; //Define Booleans
+    #define true 1
+    #define false 0
+    bool trigger1 = 1;
+    
+    typedef struct imgPtr {                     //Create image path node
+        char* filePath;
+        struct imgPtr * next;
+    } imgPtr_t;
+    imgPtr_t * imgList = NULL;
+    imgList = malloc(sizeof(imgPtr_t));
+    if (imgList == NULL) {
+        printf("Out of memory.");
+    }
+    imgPtr_t * current = imgList;               //separate pointer for iteration
 
-    char* imagepath = "/home/moses/roysmart/images/";
-    char* xmlfile = "/home/moses/roysmart/images/imageindex.xml";
-    char* image0 = "/home/moses/roysmart/images/080206120404.roe";
-    char* image1 = "/home/moses/roysmart/images/080206120411.roe";
-    char* image2 = "/home/moses/roysmart/images/080206120418.roe";
-    char* image3 = "/home/moses/roysmart/images/080206120428.roe";
-    char* image4 = "/home/moses/roysmart/images/080206120440.roe";
-    char* image5 = "/home/moses/roysmart/images/080206120458.roe";
-    char* image6 = "/home/moses/roysmart/images/080206120529.roe";
-
-    /*image queue*/
-    char* images[] = {image0, image1, image2, image3, image4, image5, image6};
-    int imageAmount = 14;
-
-
+    char* workingPath = "/students/jackson.remington/esus/testFiles/";
+    char* imagepath = "/students/jackson.remington/esus/testFiles/imageFiles/";
+    char* xmlPath = "/students/jackson.remington/esus/testFiles/xmlFiles/";
+    
+    
+    DIR *dir = opendir(imagepath);              //Populate Linked List of nodes
+    while ((dPath=readdir(dir)) != NULL){
+        char *buffer = malloc(strlen(imagepath) + strlen(dPath->d_name) + 1);
+        if (buffer == NULL) {
+                printf("Out of memory.");
+        } else {
+                strcpy (buffer, imagepath);
+                strcat (buffer, dPath->d_name);
+                tmpPath = buffer;
+        }
+        char *dot = strrchr(tmpPath, '.');
+        if (dot && !strcmp(dot, ".roe")){       //Check if file is *.roe
+            if (trigger1){                      //Check if first iteration 
+                imgList->filePath = tmpPath;
+                trigger1 = 0;
+            } else {
+                current->next = malloc(sizeof(imgPtr_t));
+                current->next->filePath = tmpPath;
+                current->next->next = NULL;
+                while (current->next != NULL) {
+                        current = current->next;
+                }
+            }
+        }
+    }
+    
+    DIR *dir2 = opendir(xmlPath);              //Find current xml file
+    while ((dPath=readdir(dir2)) != NULL){
+        char *buffer = malloc(strlen(xmlPath) + strlen(dPath->d_name) + 1);
+        if (buffer == NULL) {
+                printf("Out of memory.");
+        } else {
+                strcpy (buffer, xmlPath);
+                strcat (buffer, dPath->d_name);
+                tmpPath = buffer;
+        }
+        char *dot = strrchr(tmpPath, '.');
+        if (dot && !strcmp(dot, ".xml")){       //Check if file is *.xml
+            xmlfile = tmpPath;                  //TODO: Use naming convention to find most recent xml
+        }
+    }
+ 
+    int imageAmount = sizeof(imgList) - 1; //Offest for empty 'next' node
 
     /*Check for correct arguments*/
     if (argc > 2 || argc < 1) {
@@ -137,7 +190,7 @@ int main(int argc, char ** argv) {
     }
 
     /*Set device name, either from command line or use default value*/
-    if (argc == 3)
+    if (argc == 3)                              //NEVER TRUE (Move above previous 'if' arg?)
         devname = argv[1];
     else
         devname = "/dev/ttyUSB0"; //Set the default name of the SyncLink device
@@ -256,7 +309,15 @@ int main(int argc, char ** argv) {
     for (j = 0; j < imageAmount; j++) {
         count = 0;
         if (j % 2 == 0) {       //If we are on an odd loop send an image
-            imagename = images[j / 2];
+            
+            if (imgList) {      //If imgList still contains files to be sent
+                imagename = imgList->filePath;
+                imgList = imgList->next;
+            } else {
+                printf("Image List Empty");
+                imagename = xmlfile;            //switch to send xml file?
+            }
+            
         } else imagename = xmlfile;     //otherwise send an xml file
 
         /*Open image file for reading into a buffered stream*/
