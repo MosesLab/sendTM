@@ -56,7 +56,7 @@
  *  16777216 bytes sent is the same size as the file reported by Debian. 
  * 
  * In previous implementations of this code, the buffer holding the images was read using the 
- * function fets(). This function was incorrect as it didn't treat chars the same as all other bytes.
+ * function fgets(). This function was incorrect as it didn't treat chars the same as all other bytes.
  * Testing revealed that the code was correctly sending chars, but other bytes were being replaced 
  * by random data. This problem was rectified by using the function fread() to parse the buffer in a 
  * binary fashion.
@@ -113,15 +113,15 @@ int main(int argc, char ** argv) {
     struct timeval time_begin, time_end;
     int time_elapsed;
 
-    char* imagepath = "/home/ts-7600-linux/roysmart/images/";
-    char* xmlfile = "/home/ts-7600-linux/roysmart/images/imageindex.xml";
-    char* image0 = "/home/ts-7600-linux/roysmart/images/080206120404.roe";
-    char* image1 = "/home/ts-7600-linux/roysmart/images/080206120411.roe";
-    char* image2 = "/home/ts-7600-linux/roysmart/images/080206120418.roe";
-    char* image3 = "/home/ts-7600-linux/roysmart/images/080206120428.roe";
-    char* image4 = "/home/ts-7600-linux/roysmart/images/080206120440.roe";
-    char* image5 = "/home/ts-7600-linux/roysmart/images/080206120458.roe";
-    char* image6 = "/home/ts-7600-linux/roysmart/images/080206120529.roe";
+    char* imagepath = "/home/moses/roysmart/images/";
+    char* xmlfile = "/home/moses/roysmart/images/imageindex.xml";
+    char* image0 = "/home/moses/roysmart/images/080206120404.roe";
+    char* image1 = "/home/moses/roysmart/images/080206120411.roe";
+    char* image2 = "/home/moses/roysmart/images/080206120418.roe";
+    char* image3 = "/home/moses/roysmart/images/080206120428.roe";
+    char* image4 = "/home/moses/roysmart/images/080206120440.roe";
+    char* image5 = "/home/moses/roysmart/images/080206120458.roe";
+    char* image6 = "/home/moses/roysmart/images/080206120529.roe";
 
     /*image queue*/
     char* images[] = {image0, image1, image2, image3, image4, image5, image6};
