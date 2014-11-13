@@ -64,8 +64,8 @@ ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/sendtm: ${OBJECTFILES}
 
 ${OBJECTDIR}/sendTM.o: sendTM.c 
 	${MKDIR} -p ${OBJECTDIR}
-	${RM} $@.d
-	$(COMPILE.c) -g -MMD -MP -MF $@.d -o ${OBJECTDIR}/sendTM.o sendTM.c
+	${RM} "$@.d"
+	$(COMPILE.c) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/sendTM.o sendTM.c
 
 # Subprojects
 .build-subprojects:

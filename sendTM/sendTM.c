@@ -83,28 +83,28 @@
 #endif
 
 #ifndef BUFSIZ
-#define BUFSIZ 1024
+#define BUFSIZ 4096
 #endif
 
 /*Function to demonstrate correct command line input*/
 void display_usage(void) {
     printf("Usage: sendTM <devname> \n"
-            "devname = device name (optional) (e.g. /dev/ttyUSB0 etc. "
+            "devname = device name (optional) (e.g. /dev/ttyUSB2 etc. "
             "Default is /dev/ttyUSB0)\n");
 }
 
 /*Program entry point*/
 int main(int argc, char ** argv) {
 
-    int fd;
+    int fd, rd;
     int rc;
     int sigs, idle;
     int i;
     int ldisc = N_HDLC;
     MGSL_PARAMS params;
-    int size = 1024;
-    unsigned char databuf[1024];
-    unsigned char temp[1024];
+    int size = BUFSIZ;
+    unsigned char databuf[BUFSIZ];
+    unsigned char temp[BUFSIZ];
     unsigned char endbuf[] = "smart"; //Used this string as end-frame to terminate seperate files
     char *devname;
     char *imagename;
@@ -113,15 +113,15 @@ int main(int argc, char ** argv) {
     struct timeval time_begin, time_end;
     int time_elapsed;
 
-    char* imagepath = "/home/moses/roysmart/images/";
-    char* xmlfile = "/home/moses/roysmart/images/imageindex.xml";
-    char* image0 = "/home/moses/roysmart/images/080206120404.roe";
-    char* image1 = "/home/moses/roysmart/images/080206120411.roe";
-    char* image2 = "/home/moses/roysmart/images/080206120418.roe";
-    char* image3 = "/home/moses/roysmart/images/080206120428.roe";
-    char* image4 = "/home/moses/roysmart/images/080206120440.roe";
-    char* image5 = "/home/moses/roysmart/images/080206120458.roe";
-    char* image6 = "/home/moses/roysmart/images/080206120529.roe";
+    char* imagepath = "/home/moses/NetBeansProjects/testFiles/imageFiles";
+    char* xmlfile = "/home/moses/NetBeansProjects/testFiles/imageFiles/imageindex.xml";
+    char* image0 = "/home/moses/NetBeansProjects/testFiles/imageFiles/080206120404.roe";
+    char* image1 = "/home/moses/NetBeansProjects/testFiles/imageFiles/080206120411.roe";
+    char* image2 = "/home/moses/NetBeansProjects/testFiles/imageFiles/080206120418.roe";
+    char* image3 = "/home/moses/NetBeansProjects/testFiles/imageFiles/080206120428.roe";
+    char* image4 = "/home/moses/NetBeansProjects/testFiles/imageFiles/080206120440.roe";
+    char* image5 = "/home/moses/NetBeansProjects/testFiles/imageFiles/080206120458.roe";
+    char* image6 = "/home/moses/NetBeansProjects/testFiles/imageFiles/080206120529.roe";
 
     /*image queue*/
     char* images[] = {image0, image1, image2, image3, image4, image5, image6};
@@ -253,6 +253,7 @@ int main(int argc, char ** argv) {
      * via a write call.
      */
     int j;
+    int k;
     for (j = 0; j < imageAmount; j++) {
         count = 0;
         if (j % 2 == 0) {       //If we are on an odd loop send an image
@@ -265,43 +266,51 @@ int main(int argc, char ** argv) {
             printf("fopen(%s) error=%d %s\n", imagename, errno, strerror(errno));
             return 1;
         }
-        /*Buffer the stream using the standard system bufsiz*/
-        rc = setvbuf(fp, NULL, _IOFBF, BUFSIZ);
-        if (rc != 0) {
-            printf("setvbuf error=%d %s\n", errno, strerror(errno));
-            return rc;
+//        /*Buffer the stream using the standard system bufsiz*/
+//        rc = setvbuf(fp, NULL, _IOFBF, BUFSIZ);
+//        if (rc != 0) {
+//            printf("setvbuf error=%d %s\n", errno, strerror(errno));
+//            return rc;
+//        }
+        /*Read the image into memory*/
+        for (k=0;k<4096;k++) {
+            databuf[k] = malloc(BUFSIZ);
+            rd = fread(databuf[k], 4096, 1, fp);
         }
 
         printf("Sending data...\n");
         gettimeofday(&time_begin, NULL); //Determine elapsed time for file write to TM
         int totalSize = 0;
-        unsigned int rd = fread(databuf, 1, size, fp);
-        while (rd > 0) { //RTS changed buffer reading function from fgets to fread to allow for binary data
-            if (count == 10) memcpy(temp, databuf, size); //Store the contents of databuf
-            //into the temp buffer
-            rc = write(fd, databuf, rd);
+        //unsigned int rd = fread(databuf, 1, size, fp);
+        
+        count = 0;
+        for (k=0;k<4096;k++) { //RTS changed buffer reading function from fgets to fread to allow for binary data
+            //if (count == 10) memcpy(temp, databuf, size); //Store the contents of databuf into the temp buffer
+            rc = write(fd, databuf[k], (size_t)BUFSIZ);
+            
+            /* block until all data sent */
+            rc = tcdrain(fd);
             if (rc < 0) {
                 printf("write error=%d %s\n", errno, strerror(errno));
                 break;
             }
-            /* block until all data sent */
-            rc = tcdrain(fd);
+            
             count++;
-            totalSize += rd;
-            rd = fread(databuf, 1, size, fp);
+//            totalSize += rd;
+//            rd = fread(databuf, 1, size, fp);
         }
         if (rc < 0) return rc; //Finishes the write error handling after the break
-        rc = write(fd, endbuf, 5);
+        
+        rc = write(fd, imagename, 16);
+        /*block until all data sent*/
+        rc = tcdrain(fd);
         if (rc < 0) {
-            printf("write error=%d %s\n", errno, strerror(errno));
+            printf("endbuf write error=%d %s\n", errno, strerror(errno));
             break;
         }
 
-        /*block until all data sent*/
-        rc = tcdrain(fd);
-
         /*clear the data buffer*/
-        fflush(fp);
+        /*fflush(fp);*/
 
 
         gettimeofday(&time_end, NULL); //Timing
