@@ -103,7 +103,7 @@ int main(int argc, char ** argv) {
     int ldisc = N_HDLC;
     MGSL_PARAMS params;
     int size = BUFSIZ;
-    unsigned char databuf[BUFSIZ];
+    unsigned char *databuf[BUFSIZ];
     unsigned char temp[BUFSIZ];
     unsigned char endbuf[] = "smart"; //Used this string as end-frame to terminate seperate files
     char *devname;
