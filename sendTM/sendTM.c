@@ -94,34 +94,33 @@ void display_usage(void) {
 }
 
 /*Program entry point*/
-int main(int argc, char ** argv) {
+int main() {
 
-    int fd, rd;
-    int rc;
-    int sigs, idle;
-    int i;
+    int fd, rd, rc;
+    int fp, i, j;
+    int k, sigs, idle;
     int ldisc = N_HDLC;
     MGSL_PARAMS params;
-    int size = BUFSIZ;
     unsigned char *databuf[BUFSIZ];
+    unsigned char buf[BUFSIZ];
+    int size = sizeof(buf);
     unsigned char temp[BUFSIZ];
     unsigned char endbuf[] = "smart"; //Used this string as end-frame to terminate seperate files
     char *devname;
     char *imagename;
-    FILE *fp;
     int count = 0; //Number to determine how much data is sent
-    struct timeval time_begin, time_end;
     int time_elapsed;
+    struct timeval time_begin, time_end;
 
-    char* imagepath = "/home/moses/NetBeansProjects/testFiles/imageFiles";
-    char* xmlfile = "/home/moses/NetBeansProjects/testFiles/imageFiles/imageindex.xml";
-    char* image0 = "/home/moses/NetBeansProjects/testFiles/imageFiles/080206120404.roe";
-    char* image1 = "/home/moses/NetBeansProjects/testFiles/imageFiles/080206120411.roe";
-    char* image2 = "/home/moses/NetBeansProjects/testFiles/imageFiles/080206120418.roe";
-    char* image3 = "/home/moses/NetBeansProjects/testFiles/imageFiles/080206120428.roe";
-    char* image4 = "/home/moses/NetBeansProjects/testFiles/imageFiles/080206120440.roe";
-    char* image5 = "/home/moses/NetBeansProjects/testFiles/imageFiles/080206120458.roe";
-    char* image6 = "/home/moses/NetBeansProjects/testFiles/imageFiles/080206120529.roe";
+    char* imagepath = "/home/moses/roysmart/images";
+    char* xmlfile = "/home/moses/roysmart/images/imageindex.xml";
+    char* image0 = "/home/moses/roysmart/images/080206120404.roe";
+    char* image1 = "/home/moses/roysmart/images/080206120411.roe";
+    char* image2 = "/home/moses/roysmart/images/080206120418.roe";
+    char* image3 = "/home/moses/roysmart/images/080206120428.roe";
+    char* image4 = "/home/moses/roysmart/images/080206120440.roe";
+    char* image5 = "/home/moses/roysmart/images/080206120458.roe";
+    char* image6 = "/home/moses/roysmart/images/080206120529.roe";
 
     /*image queue*/
     char* images[] = {image0, image1, image2, image3, image4, image5, image6};
@@ -130,16 +129,16 @@ int main(int argc, char ** argv) {
 
 
     /*Check for correct arguments*/
-    if (argc > 2 || argc < 1) {
-        printf("Incorrect number of arguments\n");
-        display_usage();
-        return 1;
-    }
+    //if (argc > 2 || argc < 1) {
+        //printf("Incorrect number of arguments\n");
+        //display_usage();
+        //return 1;
+    //}
 
     /*Set device name, either from command line or use default value*/
-    if (argc == 3)
-        devname = argv[1];
-    else
+    //if (argc == 3)
+        //devname = argv[1];
+    //else
         devname = "/dev/ttyUSB0"; //Set the default name of the SyncLink device
 
     /* Fork and exec the fsynth program to set the clock source on the SyncLink
@@ -149,7 +148,7 @@ int main(int argc, char ** argv) {
      */
 
     pid_t pid = fork();
-
+    printf("forking process\n");
     if (pid == -1) {
         perror("Fork failure");
         exit(EXIT_FAILURE);
@@ -172,9 +171,10 @@ int main(int argc, char ** argv) {
         printf("open error=%d %s\n", errno, strerror(errno));
         return fd;
     }
+    else printf("device opened on %s\n", devname);
 
     /*
-     * set N_HDLC line discipline
+     * set N_HDLC line discipline						//Change this to N_TTY?
      *
      * A line discipline is a software layer between a tty device driver
      * and user application that performs intermediate processing,
@@ -204,13 +204,13 @@ int main(int argc, char ** argv) {
      * No hardware CRC
      */
 
-    params.mode = MGSL_MODE_HDLC;
+    params.mode = MGSL_MODE_HDLC;						//N_TTY?
     params.loopback = 0;
     params.flags = HDLC_FLAG_RXC_RXCPIN + HDLC_FLAG_TXC_BRG;
     params.encoding = HDLC_ENCODING_NRZ;
     params.clock_speed = 10000000;
     params.crc_type = HDLC_CRC_16_CCITT;
-    params.preamble = HDLC_PREAMBLE_PATTERN_ONES;
+    params.preamble = HDLC_PREAMBLE_PATTERN_ONES;				//Remove?
     params.preamble_length = HDLC_PREAMBLE_LENGTH_16BITS;
 
     /* set current device parameters */
@@ -222,7 +222,7 @@ int main(int argc, char ** argv) {
     }
 
     /* set transmit idle pattern (sent between frames) */
-    idle = HDLC_TXIDLE_ALT_ZEROS_ONES;
+    idle = HDLC_TXIDLE_ALT_ZEROS_ONES;						//Change? consult email stream
     rc = ioctl(fd, MGSL_IOCSTXIDLE, idle);
     if (rc < 0) {
         printf("ioctl(MGSL_IOCSTXIDLE) error=%d %s\n",
@@ -248,12 +248,11 @@ int main(int argc, char ** argv) {
     int enable = 1;
     rc = ioctl(fd, MGSL_IOCTXENABLE, enable);
 
-    /* Write imagefile to TM. This requires reading a set number of bytes (1024 currently)
-     * from the file into the data buffer, then sending the data buffer to the device 
+    /* Write imagefile to TM. This requires reading the entire image in chunks of 4096 bytes
+     * from the file into the data buffer, then sending the each chunk to the device 
      * via a write call.
      */
-    int j;
-    int k;
+
     for (j = 0; j < imageAmount; j++) {
         count = 0;
         if (j % 2 == 0) {       //If we are on an odd loop send an image
@@ -261,8 +260,8 @@ int main(int argc, char ** argv) {
         } else imagename = xmlfile;     //otherwise send an xml file
 
         /*Open image file for reading into a buffered stream*/
-        fp = fopen(imagename, "r");
-        if (fp == NULL) {
+        fp = open(imagename, O_RDONLY);
+        if (fp == -1) {
             printf("fopen(%s) error=%d %s\n", imagename, errno, strerror(errno));
             return 1;
         }
@@ -274,17 +273,19 @@ int main(int argc, char ** argv) {
 //        }
         /*Read the image into memory*/
         for (k=0;k<4096;k++) {
-            databuf[k] = malloc(BUFSIZ);
-            rd = fread(databuf[k], 4096, 1, fp);
+            databuf[k] = malloc((size_t)BUFSIZ);
+            rd = read((int)fp, databuf[k], (size_t)BUFSIZ);
+	    //rd = read(fp, *buf, (size_t)BUFSIZ);
         }
 
-        printf("Sending data...\n");
-        gettimeofday(&time_begin, NULL); //Determine elapsed time for file write to TM
+        printf("image %s read into memory", imagename);
+	printf("Sending data from memory...\n");
+        
+	gettimeofday(&time_begin, NULL); //Determine elapsed time for file write to TM
         int totalSize = 0;
         //unsigned int rd = fread(databuf, 1, size, fp);
         
-        count = 0;
-        for (k=0;k<4096;k++) { //RTS changed buffer reading function from fgets to fread to allow for binary data
+        for (k=0;k<4096;k++) {
             //if (count == 10) memcpy(temp, databuf, size); //Store the contents of databuf into the temp buffer
             rc = write(fd, databuf[k], (size_t)BUFSIZ);
             
@@ -296,12 +297,15 @@ int main(int argc, char ** argv) {
             }
             
             count++;
-//            totalSize += rd;
+//            totalSize += rc;
 //            rd = fread(databuf, 1, size, fp);
         }
-        if (rc < 0) return rc; //Finishes the write error handling after the break
+        if (rc < 0) {
+	    printf("write error handling...\n");
+	    return rc; //Finishes the write error handling after the break
+	}
         
-        rc = write(fd, imagename, 16);
+        rc = write(fd, endbuf, 5);
         /*block until all data sent*/
         rc = tcdrain(fd);
         if (rc < 0) {
@@ -310,7 +314,7 @@ int main(int argc, char ** argv) {
         }
 
         /*clear the data buffer*/
-        /*fflush(fp);*/
+        //fflush(fp);
 
 
         gettimeofday(&time_end, NULL); //Timing
@@ -332,7 +336,7 @@ int main(int argc, char ** argv) {
      * file.
      */
 
-    ////    printf("Bytes from the 10th write printed (as ASCII characters): %s\n", temp);
+    //    printf("Bytes from the 10th write printed (as ASCII characters): %s\n", temp);
 
     printf("Turn off RTS and DTR\n");
     sigs = TIOCM_RTS + TIOCM_DTR;
@@ -344,7 +348,7 @@ int main(int argc, char ** argv) {
 
     /* Close the device and the image file*/
     close(fd);
-    fclose(fp);
+    close(fp);
 
     return 0;
 }
