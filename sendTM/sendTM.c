@@ -102,7 +102,7 @@ int main() {
     int ldisc = N_HDLC;
     FILE *fp = NULL;
     MGSL_PARAMS params;
-    unsigned char *databuf[16777200];
+    unsigned char *databuf[4194300];
     int totalSize = 0;
     long sz;
     unsigned char endbuf[] = "smart"; //Used this string as end-frame to terminate seperate files
@@ -275,7 +275,7 @@ int main() {
 	//printf("New file size: %d Bytes and %d characters\n", (int)sz, ((int)sz/(int)(sizeof(char))));
 	//fseek(fp, 0L, SEEK_SET);
 	//itr = (int)((sz + (0.5*BUFSIZ)) / (BUFSIZ));
-        itr = 1;
+        itr = 4;
 	printf("New file size: %d Bytes and %d iterations\n", (int)sz, itr);
 
 
@@ -288,7 +288,7 @@ int main() {
         /*Read the image into memory*/
         for (k=0;k<itr;k++) {
             //databuf[k] = malloc((size_t)BUFSIZ);
-            rd = fread(databuf, sizeof(char), 16777200, fp);
+            rd = fread(databuf, sizeof(char), 4194300, fp);
 	    //rd = read(fp, *buf, (size_t)BUFSIZ);
         }
 
@@ -299,7 +299,7 @@ int main() {
         
         for (k=0;k<itr;k++) {
             //if (count == 10) memcpy(temp, databuf, size); //Store the contents of databuf into the temp buffer
-            rc = write(fd, databuf, 16777200);
+            rc = write(fd, databuf, 4194300);
 
 	    if (rc < 0) {
                 printf("write error=%d %s\n", errno, strerror(errno));
