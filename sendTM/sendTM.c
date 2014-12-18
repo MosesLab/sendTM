@@ -279,7 +279,7 @@ int main() {
 	//fseek(fp, 0L, SEEK_SET);
 	itr = (int)((sz + (0.5*BUFSIZ)) / (BUFSIZ));
         //itr = 4;
-	printf("New file size: %d Bytes and %d iterations\n", (int)sz, itr);
+	printf("New file size: %d Bytes and %d iterations\n", (int)sz, (2 * itr));
 
 
 //        /*Buffer the stream using the standard system bufsiz*/
@@ -291,7 +291,7 @@ int main() {
         /*Read the image into memory*/
         for (k=0;k<itr;k++) {
             //databuf[k] = malloc((size_t)BUFSIZ);
-            rd = fread(databuf, sizeof(char), 4194300, fp);
+            rd = fread(databuf, sizeof(char), BUFSIZ, fp);
 	    //rd = read(fp, *buf, (size_t)BUFSIZ);
         }
 
@@ -302,7 +302,7 @@ int main() {
         
         for (k=0;k<itr;k++) {
             //if (count == 10) memcpy(temp, databuf, size); //Store the contents of databuf into the temp buffer
-            rc = write(fd, databuf, 4194300);
+            rc = write(fd, databuf, BUFSIZ);
 
 	    if (rc < 0) {
                 printf("write error=%d %s\n", errno, strerror(errno));
