@@ -258,9 +258,13 @@ int main() {
         count = 0;
         totalSize = 0;
 	if (j % 2 == 0) {       //If we are on an odd loop send an image
+            sz = 16777200;
             imagename = images[j / 2];
-        } else imagename = xmlfile;     //otherwise send an xml file
-
+        } else {
+            sz = 28165;
+            imagename = xmlfile;     //otherwise send an xml file
+        }
+            
         /*Open image file for reading into a buffered stream*/
         fp = fopen(imagename, "r");
         if (fp == NULL) {
@@ -269,10 +273,10 @@ int main() {
         }
 
 	//struct stat st;
-        fseek(fp, 0L, SEEK_END);
+        //fseek(fp, 0L, SEEK_END);
 	//stat(fp, &st);
-        sz = ftell(fp);
-	fseek(fp, 0L, SEEK_SET);
+        //sz = ftell(fp);
+	//fseek(fp, 0L, SEEK_SET);
 	itr = (int)((sz + (0.5*BUFSIZ)) / (BUFSIZ));
         //itr = 4;
 	printf("New file size: %d Bytes and %d iterations\n", (int)sz, itr);
