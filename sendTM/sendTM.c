@@ -102,7 +102,7 @@ int main() {
     int ldisc = N_HDLC;
     FILE *fp = NULL;
     MGSL_PARAMS params;
-    unsigned char *databuf[4194300];
+    unsigned char *databuf[BUFSIZ];
     int totalSize = 0;
     long sz;
     unsigned char endbuf[] = "smart"; //Used this string as end-frame to terminate seperate files
@@ -268,14 +268,13 @@ int main() {
             return 1;
         }
 
-	struct stat st;
-        //fseek(fp, 0L, SEEK_END);
-	stat(fp, &st);
-        sz = st.st_size;
-	//printf("New file size: %d Bytes and %d characters\n", (int)sz, ((int)sz/(int)(sizeof(char))));
-	//fseek(fp, 0L, SEEK_SET);
-	//itr = (int)((sz + (0.5*BUFSIZ)) / (BUFSIZ));
-        itr = 4;
+	//struct stat st;
+        fseek(fp, 0L, SEEK_END);
+	//stat(fp, &st);
+        sz = ftell(fp);
+	fseek(fp, 0L, SEEK_SET);
+	itr = (int)((sz + (0.5*BUFSIZ)) / (BUFSIZ));
+        //itr = 4;
 	printf("New file size: %d Bytes and %d iterations\n", (int)sz, itr);
 
 
