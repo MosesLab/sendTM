@@ -97,17 +97,14 @@ void display_usage(void) {
 int main() {
 
     int fd, rd, rc;
-    int i, j, k;
+    int j, k;
     int sigs, idle, itr;
     int ldisc = N_HDLC;
     FILE *fp = NULL;
     MGSL_PARAMS params;
-    unsigned char *databuf[BUFSIZ];
-    unsigned char buf[BUFSIZ];
-    int size = BUFSIZ;
+    unsigned char *databuf[16777200];
     int totalSize = 0;
     long sz;
-    unsigned char temp[BUFSIZ];
     unsigned char endbuf[] = "smart"; //Used this string as end-frame to terminate seperate files
     char *devname;
     char *imagename;
@@ -115,7 +112,6 @@ int main() {
     int time_elapsed;
     struct timeval time_begin, time_end;
 
-    char* imagepath = "/home/moses/roysmart/images";
     char* xmlfile = "/home/moses/roysmart/images/imageindex.xml";
     char* image0 = "/home/moses/roysmart/images/080206120404.roe";
     char* image1 = "/home/moses/roysmart/images/080206120411.roe";
@@ -272,11 +268,14 @@ int main() {
             return 1;
         }
 
-	fseek(fp, 0L, SEEK_END);
-	sz = ftell(fp);
+	struct stat st;
+        //fseek(fp, 0L, SEEK_END);
+	stat(fp, &st);
+        sz = st.st_size;
 	//printf("New file size: %d Bytes and %d characters\n", (int)sz, ((int)sz/(int)(sizeof(char))));
-	fseek(fp, 0L, SEEK_SET);
-	itr = (int)((sz + (0.5*BUFSIZ)) / (BUFSIZ));
+	//fseek(fp, 0L, SEEK_SET);
+	//itr = (int)((sz + (0.5*BUFSIZ)) / (BUFSIZ));
+        itr = 1;
 	printf("New file size: %d Bytes and %d iterations\n", (int)sz, itr);
 
 
@@ -289,7 +288,7 @@ int main() {
         /*Read the image into memory*/
         for (k=0;k<itr;k++) {
             //databuf[k] = malloc((size_t)BUFSIZ);
-            rd = fread(databuf, sizeof(char), BUFSIZ, fp);
+            rd = fread(databuf, sizeof(char), 16777200, fp);
 	    //rd = read(fp, *buf, (size_t)BUFSIZ);
         }
 
@@ -300,7 +299,7 @@ int main() {
         
         for (k=0;k<itr;k++) {
             //if (count == 10) memcpy(temp, databuf, size); //Store the contents of databuf into the temp buffer
-            rc = write(fd, databuf, BUFSIZ);
+            rc = write(fd, databuf, 16777200);
 
 	    if (rc < 0) {
                 printf("write error=%d %s\n", errno, strerror(errno));
