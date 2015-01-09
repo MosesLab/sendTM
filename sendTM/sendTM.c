@@ -104,7 +104,7 @@ int main() {
     MGSL_PARAMS params;
     unsigned char *databuf[BUFSIZ];
     int totalSize = 0;
-    long sz;
+    long sz, last_sz;
     unsigned char endbuf[] = "smart"; //Used this string as end-frame to terminate seperate files
     char *devname;
     char *imagename;
@@ -259,9 +259,11 @@ int main() {
         totalSize = 0;
 	if (j % 2 == 0) {       //If we are on an odd loop send an image
             sz = 16777200;
+            itr = 4096;
             imagename = images[j / 2];
         } else {
             sz = 28165;
+            itr = 7;
             imagename = xmlfile;     //otherwise send an xml file
         }
             
@@ -277,9 +279,9 @@ int main() {
 	//stat(fp, &st);
         //sz = ftell(fp);
 	//fseek(fp, 0L, SEEK_SET);
-	itr = (int)(((sz + (0.5*BUFSIZ)) / (BUFSIZ)) + 1);
+	//itr = (int)(((sz + (0.5*BUFSIZ)) / (BUFSIZ)) + 1);
         //itr = 4;
-	printf("New file size: %d Bytes and %d iterations\n", (int)sz, (2 * itr));
+	printf("New file size: %d Bytes and %d iterations\n", (int)sz, itr);
 
 
 //        /*Buffer the stream using the standard system bufsiz*/
@@ -290,25 +292,23 @@ int main() {
 //        }
         /*Read the image into memory*/
         for (k=0;k<itr;k++) {
-            if (sz >= 4096) {
-                rd = fread(databuf, sizeof(char), BUFSIZ, fp);
-                sz  = sz - rd;
-	    }
-            else {
-                rd = fread(databuf, sizeof(char), sz, fp);
-                sz  = sz - rd;
-            }
+            
+            rd = fread(databuf, sizeof(char), BUFSIZ, fp);
+            
         }
 
+        last_sz = rd;
         printf("image: %s read into memory\n", imagename);
 	printf("Sending data from memory...\n");
 
 	gettimeofday(&time_begin, NULL); //Determine elapsed time for file write to TM
         
         for (k=0;k<itr;k++) {
-            if (k >= (itr - 1)) printf("number of iterations = %d\n", (itr*2));
+            if (k == (itr - 1)) {
+                rc = write(fd, databuf, last_sz);
+            }
             //if (count == 10) memcpy(temp, databuf, size); //Store the contents of databuf into the temp buffer
-            rc = write(fd, databuf, BUFSIZ);
+            else rc = write(fd, databuf, BUFSIZ);
 
 	    if (rc < 0) {
                 printf("write error=%d %s\n", errno, strerror(errno));
