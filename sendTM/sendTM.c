@@ -301,6 +301,7 @@ int main() {
 	gettimeofday(&time_begin, NULL); //Determine elapsed time for file write to TM
         
         for (k=0;k<itr;k++) {
+            if (k == (itr - 1)) printf("number of iterations = %d\n", itr);
             //if (count == 10) memcpy(temp, databuf, size); //Store the contents of databuf into the temp buffer
             rc = write(fd, databuf, BUFSIZ);
 
