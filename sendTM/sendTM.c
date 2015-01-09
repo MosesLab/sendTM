@@ -233,7 +233,7 @@ int main() {
 
     /* set device to blocking mode for reads and writes */
     int blk = fcntl(fd, F_GETFL);
-    blk = (blk | O_NONBLOCK);
+    blk = (blk | ~O_NONBLOCK);
     //fcntl(fd, F_SETFL, fcntl(fd, F_GETFL) & ~O_NONBLOCK);
 
     printf("Turn on RTS and DTR serial outputs\n\n");
