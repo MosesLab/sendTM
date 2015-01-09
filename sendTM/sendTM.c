@@ -277,7 +277,7 @@ int main() {
 	//stat(fp, &st);
         //sz = ftell(fp);
 	//fseek(fp, 0L, SEEK_SET);
-	itr = (int)((sz + (0.5*BUFSIZ)) / (BUFSIZ));
+	itr = (int)(((sz + (0.5*BUFSIZ)) / (BUFSIZ)) + 1);
         //itr = 4;
 	printf("New file size: %d Bytes and %d iterations\n", (int)sz, (2 * itr));
 
@@ -290,9 +290,14 @@ int main() {
 //        }
         /*Read the image into memory*/
         for (k=0;k<itr;k++) {
-            //databuf[k] = malloc((size_t)BUFSIZ);
-            rd = fread(databuf, sizeof(char), BUFSIZ, fp);
-	    //rd = read(fp, *buf, (size_t)BUFSIZ);
+            if (sz >= 4096) {
+                rd = fread(databuf, sizeof(char), BUFSIZ, fp);
+                sz  = sz - rd;
+	    }
+            else {
+                rd = fread(databuf, sizeof(char), sz, fp);
+                sz  = sz - rd;
+            }
         }
 
         printf("image: %s read into memory\n", imagename);
