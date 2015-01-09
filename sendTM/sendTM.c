@@ -309,10 +309,11 @@ int main() {
                 printf("write error=%d %s\n", errno, strerror(errno));
                 break;
             }
-
+            
+            totalSize += rc;
             /* block until all data sent */
             rc = tcdrain(fd);
-            totalSize += rc;
+            
             
 	    if (rc < 0) {
                 printf("write error=%d %s\n", errno, strerror(errno));
