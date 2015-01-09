@@ -259,11 +259,11 @@ int main() {
         totalSize = 0;
 	if (j % 2 == 0) {       //If we are on an odd loop send an image
             sz = 16777200;
-            itr = 4096;
+            itr = 2048;
             imagename = images[j / 2];
         } else {
             sz = 28165;
-            itr = 7;
+            itr = 4;
             imagename = xmlfile;     //otherwise send an xml file
         }
             
