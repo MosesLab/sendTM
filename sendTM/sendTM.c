@@ -293,7 +293,7 @@ int main() {
         /*Read the image into memory*/
         for (k=0;k<itr;k++) {
             
-            rd = fread(databuf[k], sizeof(char), BUFSIZ, fp);
+            rd = fread(databuf[k+1], sizeof(char), BUFSIZ, fp);
             
         }
 
@@ -305,7 +305,7 @@ int main() {
         
         for (k=0;k<itr;k++) {
             //if (count == 10) memcpy(temp, databuf, size); //Store the contents of databuf into the temp buffer
-            rc = write(fd, databuf[k], BUFSIZ);
+            rc = write(fd, databuf[k+1], BUFSIZ);
 
 	    if (rc < 0) {
                 printf("write error=%d %s\n", errno, strerror(errno));
