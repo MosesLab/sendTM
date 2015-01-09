@@ -293,7 +293,7 @@ int main() {
         /*Read the image into memory*/
         for (k=0;k<itr;k++) {
             
-            rd = fread(databuf, sizeof(char), BUFSIZ, fp);
+            rd = fread(databuf[k], sizeof(char), BUFSIZ, fp);
             
         }
 
@@ -304,11 +304,8 @@ int main() {
 	gettimeofday(&time_begin, NULL); //Determine elapsed time for file write to TM
         
         for (k=0;k<itr;k++) {
-            if (k == (itr - 1)) {
-                rc = write(fd, databuf, last_sz);
-            }
             //if (count == 10) memcpy(temp, databuf, size); //Store the contents of databuf into the temp buffer
-            else rc = write(fd, databuf, BUFSIZ);
+            rc = write(fd, databuf[k], BUFSIZ);
 
 	    if (rc < 0) {
                 printf("write error=%d %s\n", errno, strerror(errno));
