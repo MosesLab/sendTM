@@ -165,7 +165,7 @@ int main() {
     printf("send HDLC data on %s\n", devname);
 
     /* open serial device with O_NONBLOCK to ignore DCD input */
-    fd = open(devname, O_RDWR | ~O_NONBLOCK, 0);
+    fd = open(devname, O_RDWR | O_NONBLOCK, 0);
     if (fd < 0) {
         printf("open error=%d %s\n", errno, strerror(errno));
         return fd;
@@ -233,7 +233,7 @@ int main() {
 
     /* set device to blocking mode for reads and writes */
     int blk = fcntl(fd, F_GETFL);
-    blk = (blk | ~O_NONBLOCK);
+    blk = (blk | O_NONBLOCK);
     //fcntl(fd, F_SETFL, fcntl(fd, F_GETFL) & ~O_NONBLOCK);
 
     printf("Turn on RTS and DTR serial outputs\n\n");
