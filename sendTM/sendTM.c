@@ -281,7 +281,7 @@ int main() {
 	//fseek(fp, 0L, SEEK_SET);
 	//itr = (int)(((sz + (0.5*BUFSIZ)) / (BUFSIZ)) + 1);
         //itr = 4;
-	printf("New file size: %d Bytes and %d iterations\n", (int)sz, (2*itr));
+	printf("New file size: %d Bytes\n", (int)sz);
 
 
 //        /*Buffer the stream using the standard system bufsiz*/
