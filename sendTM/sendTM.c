@@ -104,7 +104,7 @@ int main() {
     MGSL_PARAMS params;
     unsigned char *databuf[BUFSIZ];
     int totalSize = 0;
-    long sz, last_sz;
+    long sz;
     unsigned char endbuf[] = "smart"; //Used this string as end-frame to terminate seperate files
     char *devname;
     char *imagename;
@@ -281,7 +281,7 @@ int main() {
 	//fseek(fp, 0L, SEEK_SET);
 	//itr = (int)(((sz + (0.5*BUFSIZ)) / (BUFSIZ)) + 1);
         //itr = 4;
-	printf("New file size: %d Bytes and %d iterations\n", (int)sz, itr);
+	printf("New file size: %d Bytes and %d iterations\n", (int)sz, (2*itr));
 
 
 //        /*Buffer the stream using the standard system bufsiz*/
@@ -297,16 +297,19 @@ int main() {
             
         }
 
-        last_sz = rd;
         printf("image: %s read into memory\n", imagename);
 	printf("Sending data from memory...\n");
 
 	gettimeofday(&time_begin, NULL); //Determine elapsed time for file write to TM
         
         for (k=0;k<itr;k++) {
+            if (sz < BUFSIZ) {
+                rc = write(fd, databuf, sz);
+            }            
             //if (count == 10) memcpy(temp, databuf, size); //Store the contents of databuf into the temp buffer
-            rc = write(fd, databuf, BUFSIZ);
-
+            else rc = write(fd, databuf, BUFSIZ);
+            sz = sz - rc;
+            
 	    if (rc < 0) {
                 printf("write error=%d %s\n", errno, strerror(errno));
                 break;
