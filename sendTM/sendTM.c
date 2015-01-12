@@ -259,11 +259,11 @@ int main() {
         totalSize = 0;
 	if (j % 2 == 0) {       //If we are on an odd loop send an image
             sz = 16777200;
-            itr = 2048;
+            itr = 4096 / 2;
             imagename = images[j / 2];
         } else {
             sz = 28165;
-            itr = 4;
+            itr = 8 / 2;
             imagename = xmlfile;     //otherwise send an xml file
         }
             
@@ -281,7 +281,7 @@ int main() {
 	//fseek(fp, 0L, SEEK_SET);
 	//itr = (int)(((sz + (0.5*BUFSIZ)) / (BUFSIZ)) + 1);
         //itr = 4;
-	printf("New file size: %d Bytes\n", (int)sz);
+	printf("New file: %s of size: %d Bytes\n", imagename, (int)sz);
 
 
 //        /*Buffer the stream using the standard system bufsiz*/
