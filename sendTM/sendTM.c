@@ -232,9 +232,9 @@ int main() {
 
 
     /* set device to blocking mode for reads and writes */
-    int blk = fcntl(fd, F_GETFL);
-    blk = (blk | O_NONBLOCK);
-    //fcntl(fd, F_SETFL, fcntl(fd, F_GETFL) & ~O_NONBLOCK);
+    //int blk = fcntl(fd, F_GETFL);
+    //blk = (blk | O_NONBLOCK);
+    fcntl(fd, F_SETFL, fcntl(fd, F_GETFL) & ~O_NONBLOCK);
 
     printf("Turn on RTS and DTR serial outputs\n\n");
     sigs = TIOCM_RTS + TIOCM_DTR;
@@ -284,12 +284,12 @@ int main() {
 	printf("New file: %s of size: %d Bytes\n", imagename, (int)sz);
 
 
-//        /*Buffer the stream using the standard system bufsiz*/
-//        rc = setvbuf(fp, NULL, _IOFBF, BUFSIZ);
-//        if (rc != 0) {
-//            printf("setvbuf error=%d %s\n", errno, strerror(errno));
-//            return rc;
-//        }
+        /*Buffer the stream using the standard system bufsiz*/
+        rc = setvbuf(fp, NULL, _IOFBF, BUFSIZ);
+        if (rc != 0) {
+            printf("setvbuf error=%d %s\n", errno, strerror(errno));
+            return rc;
+        }
         /*Read the image into memory*/
         for (k=0;k<itr;k++) {
             
@@ -305,28 +305,24 @@ int main() {
         for (k=0;k<itr;k++) {
             if (sz < BUFSIZ) {
                 rc = write(fd, databuf, sz);
+                /* block until all data sent */
+                totalSize += rc;
+                rc = tcdrain(fd);
             }            
             //if (count == 10) memcpy(temp, databuf, size); //Store the contents of databuf into the temp buffer
-            else rc = write(fd, databuf, BUFSIZ);
-            sz = sz - rc;
-            
-	    if (rc < 0) {
-                printf("write error=%d %s\n", errno, strerror(errno));
-                break;
+            else { 
+                rc = write(fd, databuf, BUFSIZ);
+                /* block until all data sent */
+                totalSize += rc;
+                rc = tcdrain(fd);
+                sz = sz - rc;
             }
-            
-            totalSize += rc;
-            /* block until all data sent */
-            rc = tcdrain(fd);
-            
-            
 	    if (rc < 0) {
                 printf("write error=%d %s\n", errno, strerror(errno));
                 break;
             }
             
             count++;
-
 
         }
         if (rc < 0) {
