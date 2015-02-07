@@ -129,16 +129,16 @@ int main() {
 
     /*Check for correct arguments*/
     //if (argc > 2 || argc < 1) {
-        //printf("Incorrect number of arguments\n");
-        //display_usage();
-        //return 1;
+    //printf("Incorrect number of arguments\n");
+    //display_usage();
+    //return 1;
     //}
 
     /*Set device name, either from command line or use default value*/
     //if (argc == 3)
-        //devname = argv[1];
+    //devname = argv[1];
     //else
-        devname = "/dev/ttyUSB0"; //Set the default name of the SyncLink device
+    devname = "/dev/ttyUSB0"; //Set the default name of the SyncLink device
 
     /* Fork and exec the fsynth program to set the clock source on the SyncLink
      * to use the synthesized 20 MHz clock from the onboard frequency synthesizer
@@ -169,8 +169,7 @@ int main() {
     if (fd < 0) {
         printf("open error=%d %s\n", errno, strerror(errno));
         return fd;
-    }
-    else printf("device opened on %s\n", devname);
+    } else printf("device opened on %s\n", devname);
 
     /*
      * set N_HDLC line discipline						//Change this to N_TTY?
@@ -203,13 +202,13 @@ int main() {
      * No hardware CRC
      */
 
-    params.mode = MGSL_MODE_HDLC;						//N_TTY?
+    params.mode = MGSL_MODE_HDLC;                       //N_TTY?
     params.loopback = 0;
     params.flags = HDLC_FLAG_RXC_RXCPIN + HDLC_FLAG_TXC_BRG;
     params.encoding = HDLC_ENCODING_NRZ;
     params.clock_speed = 10000000;
     params.crc_type = HDLC_CRC_16_CCITT;
-    params.preamble = HDLC_PREAMBLE_PATTERN_ONES;				//Remove?
+    params.preamble = HDLC_PREAMBLE_PATTERN_ONES;               //Remove?
     params.preamble_length = HDLC_PREAMBLE_LENGTH_16BITS;
 
     /* set current device parameters */
@@ -221,7 +220,7 @@ int main() {
     }
 
     /* set transmit idle pattern (sent between frames) */
-    idle = HDLC_TXIDLE_ALT_ZEROS_ONES;						//Change? consult email stream
+    idle = HDLC_TXIDLE_ALT_ZEROS_ONES; //Change? consult email stream
     rc = ioctl(fd, MGSL_IOCSTXIDLE, idle);
     if (rc < 0) {
         printf("ioctl(MGSL_IOCSTXIDLE) error=%d %s\n",
@@ -257,16 +256,16 @@ int main() {
     for (j = 0; j < imageAmount; j++) {
         count = 0;
         totalSize = 0;
-	if (j % 2 == 0) {       //If we are on an odd loop send an image
+        if (j % 2 == 0) { //If we are on an odd loop send an image
             sz = 16777200;
             itr = 4096 / 2;
             imagename = images[j / 2];
         } else {
             sz = 28165;
             itr = 8 / 2;
-            imagename = xmlfile;     //otherwise send an xml file
+            imagename = xmlfile; //otherwise send an xml file
         }
-            
+
         /*Open image file for reading into a buffered stream*/
         fp = fopen(imagename, "r");
         if (fp == NULL) {
@@ -274,14 +273,14 @@ int main() {
             return 1;
         }
 
-	//struct stat st;
+        //struct stat st;
         //fseek(fp, 0L, SEEK_END);
-	//stat(fp, &st);
+        //stat(fp, &st);
         //sz = ftell(fp);
-	//fseek(fp, 0L, SEEK_SET);
-	//itr = (int)(((sz + (0.5*BUFSIZ)) / (BUFSIZ)) + 1);
+        //fseek(fp, 0L, SEEK_SET);
+        //itr = (int)(((sz + (0.5*BUFSIZ)) / (BUFSIZ)) + 1);
         //itr = 4;
-	printf("New file: %s of size: %d Bytes\n", imagename, (int)sz);
+        printf("New file: %s of size: %d Bytes\n", imagename, (int) sz);
 
 
         /*Buffer the stream using the standard system bufsiz*/
@@ -291,54 +290,54 @@ int main() {
             return rc;
         }
         /*Read the image into memory*/
-        for (k=0;k<itr;k++) {
-            
-            rd = fread(databuf, sizeof(char), BUFSIZ, fp);
-            
+        for (k = 0; k < itr; k++) {
+
+            rd = fread(databuf, sizeof (char), BUFSIZ, fp);
+
         }
 
         printf("image: %s read into memory\n", imagename);
-	printf("Sending data from memory...\n");
+        printf("Sending data from memory...\n");
 
-	gettimeofday(&time_begin, NULL); //Determine elapsed time for file write to TM
-        
-        for (k=0;k<itr;k++) {
+        gettimeofday(&time_begin, NULL); //Determine elapsed time for file write to TM
+
+        for (k = 0; k < itr; k++) {
             if (sz < BUFSIZ) {
                 rc = write(fd, databuf, sz);
                 /* block until all data sent */
                 totalSize += rc;
                 rc = tcdrain(fd);
-            }            
-            //if (count == 10) memcpy(temp, databuf, size); //Store the contents of databuf into the temp buffer
-            else { 
+            }
+                //if (count == 10) memcpy(temp, databuf, size); //Store the contents of databuf into the temp buffer
+            else {
                 rc = write(fd, databuf, BUFSIZ);
                 /* block until all data sent */
                 totalSize += rc;
                 rc = tcdrain(fd);
                 sz = sz - rc;
             }
-	    if (rc < 0) {
+            if (rc < 0) {
                 printf("write error=%d %s\n", errno, strerror(errno));
                 break;
             }
-            
+
             count++;
 
         }
         if (rc < 0) {
-	    printf("write error handling...\n");
-	    return rc; //Finishes the write error handling after the break
-	}
+            printf("write error handling...\n");
+            return rc; //Finishes the write error handling after the break
+        }
 
-	fclose(fp);
+        fclose(fp);
         rc = write(fd, endbuf, 5);
 
-	if (rc < 0) {
-                printf("write error=%d %s\n", errno, strerror(errno));
-                break;
-         }
+        if (rc < 0) {
+            printf("write error=%d %s\n", errno, strerror(errno));
+            break;
+        }
 
-	/*block until all data sent*/
+        /*block until all data sent*/
         rc = tcdrain(fd);
         if (rc < 0) {
             printf("endbuf write error=%d %s\n", errno, strerror(errno));
