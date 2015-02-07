@@ -75,6 +75,7 @@
 #include <termios.h>
 #include <errno.h>
 #include <sys/time.h>
+#include <sys/wait.h>
 
 #include "synclink.h"
 
@@ -96,9 +97,9 @@ void display_usage(void) {
 /*Program entry point*/
 int main() {
 
-    int fd, rd, rc;
-    int j, k;
-    int sigs, idle, itr;
+    int fd, rc;
+    int j;
+    int sigs, idle;
     int ldisc = N_HDLC;
     FILE *image_fp = NULL;
     MGSL_PARAMS params;
@@ -108,7 +109,6 @@ int main() {
     unsigned char endbuf[] = "smart"; //Used this string as end-frame to terminate seperate files
     char *devname;
     char *imagename;
-    int count = 0; //Number to determine how much data is sent
     int time_elapsed;
     struct timeval time_begin, time_end;
 
@@ -159,7 +159,7 @@ int main() {
         _exit(EXIT_FAILURE); //Child should die after exec call. If it gets
         //here then the exec failed
     } else if (pid > 0) {
-        wait(); //Wait for child to finish
+        wait(0); //Wait for child to finish
     }
 
     printf("send HDLC data on %s\n", devname);
@@ -254,7 +254,6 @@ int main() {
      */
 
     for (j = 0; j < imageAmount; j++) {
-        count = 0;
         totalSize = 0;
 
         if (j % 2 == 0) { //If we are on an odd loop send an image
@@ -271,7 +270,7 @@ int main() {
         unsigned int databuf[sz]; //allocate new buffer
 
         /*Open image file for reading into a buffered stream*/
-        image_fp = fopen(imagename, "r");
+        image_fp = fopen(imagename, "r+");
         if (image_fp == NULL) {
             printf("fopen(%s) error=%d %s\n", imagename, errno, strerror(errno));
             return 1;
@@ -289,7 +288,11 @@ int main() {
         /*Read the image into memory*/
         //        for (k = 0; k < itr; k++) {
 
-        rd = fread(databuf, sizeof (int), sz, image_fp);
+        rc = fread(databuf, sizeof (int), sz, image_fp);
+        if (rc < 0) {
+            printf("Error reading in simulated image...\n");
+            return rc; //Finishes the write error handling after the break
+        }
 
         //        }
 
