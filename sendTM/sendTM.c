@@ -267,7 +267,7 @@ int main() {
             imagename = xmlfile; //otherwise send an xml file
         }
 
-        unsigned int databuf[sz]; //allocate new buffer
+        int databuf[sz]; //allocate new buffer
 
         /*Open image file for reading into a buffered stream*/
         image_fp = fopen(imagename, "r+");
