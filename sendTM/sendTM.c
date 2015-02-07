@@ -103,7 +103,7 @@ int main() {
     int ldisc = N_HDLC;
     FILE *image_fp = NULL;
     MGSL_PARAMS params;
-    //    unsigned char *databuf[BUFSIZ];
+    unsigned int * databuf;
     int totalSize = 0;
     int sz;
     unsigned char endbuf[] = "smart"; //Used this string as end-frame to terminate seperate files
@@ -267,7 +267,7 @@ int main() {
             imagename = xmlfile; //otherwise send an xml file
         }
 
-        int databuf[sz]; //allocate new buffer
+        databuf = malloc(sz);
 
         /*Open image file for reading into a buffered stream*/
         image_fp = fopen(imagename, "r+");
