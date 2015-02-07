@@ -267,7 +267,7 @@ int main() {
             imagename = xmlfile; //otherwise send an xml file
         }
 
-        databuf = malloc(sz);
+        databuf = malloc(sz*4);
 
         /*Open image file for reading into a buffered stream*/
         image_fp = fopen(imagename, "r+");
@@ -289,6 +289,7 @@ int main() {
         //        for (k = 0; k < itr; k++) {
 
         rc = fread(databuf, sizeof (int), sz, image_fp);
+        
         if (rc < 0) {
             printf("Error reading in simulated image...\n");
             return rc; //Finishes the write error handling after the break
