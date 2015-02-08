@@ -22,6 +22,14 @@ CND_ARTIFACT_PATH_Release=dist/Release/GNU-Linux-x86/sendtm
 CND_PACKAGE_DIR_Release=dist/Release/GNU-Linux-x86/package
 CND_PACKAGE_NAME_Release=sendtm.tar
 CND_PACKAGE_PATH_Release=dist/Release/GNU-Linux-x86/package/sendtm.tar
+# fd configuration
+CND_PLATFORM_fd=GNU-Linux-x86
+CND_ARTIFACT_DIR_fd=dist/fd/GNU-Linux-x86
+CND_ARTIFACT_NAME_fd=sendtm
+CND_ARTIFACT_PATH_fd=dist/fd/GNU-Linux-x86/sendtm
+CND_PACKAGE_DIR_fd=dist/fd/GNU-Linux-x86/package
+CND_PACKAGE_NAME_fd=sendtm.tar
+CND_PACKAGE_PATH_fd=dist/fd/GNU-Linux-x86/package/sendtm.tar
 #
 # include compiler specific variables
 #

@@ -36,6 +36,9 @@
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
       <compileType>
+        <cTool>
+          <commandLine>-Werror -Wall</commandLine>
+        </cTool>
       </compileType>
       <item path="sendTM.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -61,6 +64,22 @@
         <asmTool>
           <developmentMode>5</developmentMode>
         </asmTool>
+      </compileType>
+      <item path="sendTM.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="synclink.h" ex="false" tool="3" flavor2="0">
+      </item>
+    </conf>
+    <conf name="fd" type="1">
+      <toolsSet>
+        <compilerSet>default</compilerSet>
+        <dependencyChecking>true</dependencyChecking>
+        <rebuildPropChanged>false</rebuildPropChanged>
+      </toolsSet>
+      <compileType>
+        <cTool>
+          <commandLine>-march=i486 -O2 -Werror -Wall</commandLine>
+        </cTool>
       </compileType>
       <item path="sendTM.c" ex="false" tool="0" flavor2="0">
       </item>
