@@ -220,13 +220,13 @@ int main() {
     }
 
     /* set transmit idle pattern (sent between frames) */
-    idle = HDLC_TXIDLE_ALT_ZEROS_ONES; //Change? consult email stream
-    rc = ioctl(fd, MGSL_IOCSTXIDLE, idle);
-    if (rc < 0) {
-        printf("ioctl(MGSL_IOCSTXIDLE) error=%d %s\n",
-                errno, strerror(errno));
-        return rc;
-    }
+//    idle = HDLC_TXIDLE_ALT_ZEROS_ONES; //Change? consult email stream
+//    rc = ioctl(fd, MGSL_IOCSTXIDLE, idle);
+//    if (rc < 0) {
+//        printf("ioctl(MGSL_IOCSTXIDLE) error=%d %s\n",
+//                errno, strerror(errno));
+//        return rc;
+//    }
 
 
 
@@ -278,16 +278,6 @@ int main() {
 
         printf("New file: %s of size: %d Bytes\n", imagename, (int) sz);
 
-
-        /*Buffer the stream using the standard system bufsiz*/
-        //        rc = setvbuf(fp, NULL, _IOFBF, BUFSIZ);
-        //        if (rc != 0) {
-        //            printf("setvbuf error=%d %s\n", errno, strerror(errno));
-        //            return rc;
-        //        }
-        /*Read the image into memory*/
-        //        for (k = 0; k < itr; k++) {
-
         rc = fread(databuf, sizeof (int), sz, image_fp);
         
         if (rc < 0) {
@@ -295,36 +285,12 @@ int main() {
             return rc; //Finishes the write error handling after the break
         }
 
-        //        }
 
         printf("image: %s read into memory\n", imagename);
         printf("Sending data from memory...\n");
 
         gettimeofday(&time_begin, NULL); //Determine elapsed time for file write to TM
-
-        //        for (k = 0; k < itr; k++) {
-        //            if (sz < BUFSIZ) {
-        //                rc = write(fd, databuf, sz);
-        //                /* block until all data sent */
-        //                totalSize += rc;
-        //                rc = tcdrain(fd);
-        //            }                //if (count == 10) memcpy(temp, databuf, size); //Store the contents of databuf into the temp buffer
-        //            else {
-        //                rc = write(fd, databuf, BUFSIZ);
-        //                /* block until all data sent */
-        //                totalSize += rc;
-        //                rc = tcdrain(fd);
-        //                sz = sz - rc;
-        //            }
-        //            if (rc < 0) {
-        //                printf("write error=%d %s\n", errno, strerror(errno));
-        //                break;
-        //            }
-        //
-        //            count++;
-        //
-        //        }
-
+        
         rc = write(fd, databuf, sz * 4);
         if (rc < 0) {
             printf("write error handling...\n");
@@ -339,8 +305,9 @@ int main() {
         }
 
         fclose(image_fp);
+        
+        /*write terminating characters*/
         rc = write(fd, endbuf, 5);
-
         if (rc < 0) {
             printf("write error=%d %s\n", errno, strerror(errno));
             break;
@@ -352,10 +319,6 @@ int main() {
             printf("endbuf write error=%d %s\n", errno, strerror(errno));
             break;
         }
-
-        /*clear the data buffer*/
-        //fflush(fp);
-
 
         gettimeofday(&time_end, NULL); //Timing
         printf("all data sent\n");
