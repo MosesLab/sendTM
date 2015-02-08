@@ -100,7 +100,7 @@ int main() {
     int fd, rc;
     int j;
     int sigs;
-//    int idle;
+    int idle;
     int ldisc = N_HDLC;
     FILE *image_fp = NULL;
     MGSL_PARAMS params;
@@ -221,13 +221,13 @@ int main() {
     }
 
     /* set transmit idle pattern (sent between frames) */
-//    idle = HDLC_TXIDLE_ALT_ZEROS_ONES; //Change? consult email stream
-//    rc = ioctl(fd, MGSL_IOCSTXIDLE, idle);
-//    if (rc < 0) {
-//        printf("ioctl(MGSL_IOCSTXIDLE) error=%d %s\n",
-//                errno, strerror(errno));
-//        return rc;
-//    }
+    idle = HDLC_TXIDLE_FLAGS; //Change? consult email stream
+    rc = ioctl(fd, MGSL_IOCSTXIDLE, idle);
+    if (rc < 0) {
+        printf("ioctl(MGSL_IOCSTXIDLE) error=%d %s\n",
+                errno, strerror(errno));
+        return rc;
+    }
 
 
 
