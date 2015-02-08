@@ -99,7 +99,8 @@ int main() {
 
     int fd, rc;
     int j;
-    int sigs, idle;
+    int sigs;
+//    int idle;
     int ldisc = N_HDLC;
     FILE *image_fp = NULL;
     MGSL_PARAMS params;
