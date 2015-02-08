@@ -263,7 +263,7 @@ int main() {
             imagename = images[j / 2];
 
         } else {
-            sz = 28165;
+            sz = 28165 / 4;
             //            itr = 8 / 2;
             imagename = xmlfile; //otherwise send an xml file
         }
