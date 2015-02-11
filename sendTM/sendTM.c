@@ -1,15 +1,18 @@
 /********************************************************************************
  * MOSES telemetry downlink test code
  *
- * Author: Jacob Plovanic, Roy Smart
+ * Author: Jacob Plovanic, Roy Smart, Jackson Remington
+ * 
  * History:
  *  Created Dec 17 2013
  *  Tested  Dec 18 2013 
  *  Tested May 9 2014 successfully at White Sands Missile Range (See results below)
+ *  Tested Feb 7 2015 successfully in-lab (updated version)
  *
  * Uses the Microgate USB SyncLink adapter to achieve synchronous serial speeds
  * of 10 Mbps to downlink MOSES science data. The data are contained in 16 MB 
- * (possibly 12 MB) files.
+ * (possibly 12 MB) files. 
+ *** Should we work to eliminate 4th channel?***
  *
  * This program will configure the SyncLink device for use as a linux serial node
  * with the appropriate framing, bitrate, desired error checking, idle pattern,
@@ -20,7 +23,7 @@
  * program.
  *
  * Required files:
- *  synclink.h
+ *  synclink.h  (fsynth.c?)
  *
  * Compiling for the TS7600 ARM9 flight computer requires the appropriate version
  * of gcc, which is native to the FC's Debian distribution or included in the cross-
@@ -181,7 +184,7 @@ int main() {
      */
     rc = ioctl(fd, TIOCSETD, &ldisc);
     if (rc < 0) {
-        printf("set line discipline error=%d %s\n",
+        printf("set  2line discipline error=%d %s\n",
                 errno, strerror(errno));
         return rc;
     }
@@ -259,11 +262,11 @@ int main() {
         totalSize = 0;
 	if (j % 2 == 0) {       //If we are on an odd loop send an image
             sz = 16777200;
-            itr = 4096 / 2;
+            itr = 1 + ((int) (sz / 4096));
             imagename = images[j / 2];
         } else {
             sz = 28165;
-            itr = 8 / 2;
+            itr = 1 + ((int) (sz / 4096));
             imagename = xmlfile;     //otherwise send an xml file
         }
             
