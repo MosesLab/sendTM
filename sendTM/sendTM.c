@@ -78,6 +78,7 @@
 #include <termios.h>
 #include <errno.h>
 #include <sys/time.h>
+#include <sys/wait.h>
 
 #include "synclink.h"
 
@@ -99,19 +100,19 @@ void display_usage(void) {
 /*Program entry point*/
 int main() {
 
-    int fd, rd, rc;
-    int j, k;
-    int sigs, idle, itr;
+    int fd, rc;
+    int j;
+    int sigs;
+    int idle;
     int ldisc = N_HDLC;
-    FILE *fp = NULL;
+    FILE *image_fp = NULL;
     MGSL_PARAMS params;
-    unsigned char *databuf[BUFSIZ];
+    unsigned int * databuf;
     int totalSize = 0;
-    long sz;
+    int sz;
     unsigned char endbuf[] = "smart"; //Used this string as end-frame to terminate seperate files
     char *devname;
     char *imagename;
-    int count = 0; //Number to determine how much data is sent
     int time_elapsed;
     struct timeval time_begin, time_end;
 
@@ -132,16 +133,16 @@ int main() {
 
     /*Check for correct arguments*/
     //if (argc > 2 || argc < 1) {
-        //printf("Incorrect number of arguments\n");
-        //display_usage();
-        //return 1;
+    //printf("Incorrect number of arguments\n");
+    //display_usage();
+    //return 1;
     //}
 
     /*Set device name, either from command line or use default value*/
     //if (argc == 3)
-        //devname = argv[1];
+    //devname = argv[1];
     //else
-        devname = "/dev/ttyUSB0"; //Set the default name of the SyncLink device
+    devname = "/dev/ttyUSB0"; //Set the default name of the SyncLink device
 
     /* Fork and exec the fsynth program to set the clock source on the SyncLink
      * to use the synthesized 20 MHz clock from the onboard frequency synthesizer
@@ -162,7 +163,7 @@ int main() {
         _exit(EXIT_FAILURE); //Child should die after exec call. If it gets
         //here then the exec failed
     } else if (pid > 0) {
-        wait(); //Wait for child to finish
+        wait(0); //Wait for child to finish
     }
 
     printf("send HDLC data on %s\n", devname);
@@ -172,8 +173,7 @@ int main() {
     if (fd < 0) {
         printf("open error=%d %s\n", errno, strerror(errno));
         return fd;
-    }
-    else printf("device opened on %s\n", devname);
+    } else printf("device opened on %s\n", devname);
 
     /*
      * set N_HDLC line discipline						//Change this to N_TTY?
@@ -206,13 +206,13 @@ int main() {
      * No hardware CRC
      */
 
-    params.mode = MGSL_MODE_HDLC;						//N_TTY?
+    params.mode = MGSL_MODE_HDLC;                       //N_TTY?
     params.loopback = 0;
     params.flags = HDLC_FLAG_RXC_RXCPIN + HDLC_FLAG_TXC_BRG;
     params.encoding = HDLC_ENCODING_NRZ;
     params.clock_speed = 10000000;
     params.crc_type = HDLC_CRC_16_CCITT;
-    params.preamble = HDLC_PREAMBLE_PATTERN_ONES;				//Remove?
+    params.preamble = HDLC_PREAMBLE_PATTERN_ONES;               //Remove?
     params.preamble_length = HDLC_PREAMBLE_LENGTH_16BITS;
 
     /* set current device parameters */
@@ -224,7 +224,7 @@ int main() {
     }
 
     /* set transmit idle pattern (sent between frames) */
-    idle = HDLC_TXIDLE_ALT_ZEROS_ONES;						//Change? consult email stream
+    idle = HDLC_TXIDLE_FLAGS; //Change? consult email stream
     rc = ioctl(fd, MGSL_IOCSTXIDLE, idle);
     if (rc < 0) {
         printf("ioctl(MGSL_IOCSTXIDLE) error=%d %s\n",
@@ -258,99 +258,71 @@ int main() {
      */
 
     for (j = 0; j < imageAmount; j++) {
-        count = 0;
         totalSize = 0;
-	if (j % 2 == 0) {       //If we are on an odd loop send an image
-            sz = 16777200;
-            itr = 1 + ((int) (sz / 4096));
+
+        if (j % 2 == 0) { //If we are on an odd loop send an image
+            sz = 16777200 / 4;
+            //            itr = 4096 / 2;
             imagename = images[j / 2];
+
         } else {
-            sz = 28165;
-            itr = 1 + ((int) (sz / 4096));
-            imagename = xmlfile;     //otherwise send an xml file
+            sz = 28165 / 4;
+            //            itr = 8 / 2;
+            imagename = xmlfile; //otherwise send an xml file
         }
-            
+
+        databuf = malloc(sz*4);
+
         /*Open image file for reading into a buffered stream*/
-        fp = fopen(imagename, "r");
-        if (fp == NULL) {
+        image_fp = fopen(imagename, "r+");
+        if (image_fp == NULL) {
             printf("fopen(%s) error=%d %s\n", imagename, errno, strerror(errno));
             return 1;
         }
 
-	//struct stat st;
-        //fseek(fp, 0L, SEEK_END);
-	//stat(fp, &st);
-        //sz = ftell(fp);
-	//fseek(fp, 0L, SEEK_SET);
-	//itr = (int)(((sz + (0.5*BUFSIZ)) / (BUFSIZ)) + 1);
-        //itr = 4;
-	printf("New file: %s of size: %d Bytes\n", imagename, (int)sz);
+        printf("New file: %s of size: %d Bytes\n", imagename, (int) sz);
 
+        rc = fread(databuf, sizeof (int), sz, image_fp);
+        
+        if (rc < 0) {
+            printf("Error reading in simulated image...\n");
+            return rc; //Finishes the write error handling after the break
+        }
 
-        /*Buffer the stream using the standard system bufsiz*/
-        rc = setvbuf(fp, NULL, _IOFBF, BUFSIZ);
-        if (rc != 0) {
-            printf("setvbuf error=%d %s\n", errno, strerror(errno));
-            return rc;
-        }
-        /*Read the image into memory*/
-        for (k=0;k<itr;k++) {
-            
-            rd = fread(databuf, sizeof(char), BUFSIZ, fp);
-            
-        }
 
         printf("image: %s read into memory\n", imagename);
-	printf("Sending data from memory...\n");
+        printf("Sending data from memory...\n");
 
-	gettimeofday(&time_begin, NULL); //Determine elapsed time for file write to TM
+        gettimeofday(&time_begin, NULL); //Determine elapsed time for file write to TM
         
-        for (k=0;k<itr;k++) {
-            if (sz < BUFSIZ) {
-                rc = write(fd, databuf, sz);
-                /* block until all data sent */
-                totalSize += rc;
-                rc = tcdrain(fd);
-            }            
-            //if (count == 10) memcpy(temp, databuf, size); //Store the contents of databuf into the temp buffer
-            else { 
-                rc = write(fd, databuf, BUFSIZ);
-                /* block until all data sent */
-                totalSize += rc;
-                rc = tcdrain(fd);
-                sz = sz - rc;
-            }
-	    if (rc < 0) {
-                printf("write error=%d %s\n", errno, strerror(errno));
-                break;
-            }
-            
-            count++;
-
-        }
+        rc = write(fd, databuf, sz * 4);
         if (rc < 0) {
-	    printf("write error handling...\n");
-	    return rc; //Finishes the write error handling after the break
-	}
+            printf("write error handling...\n");
+            return rc; //Finishes the write error handling after the break
+        }
 
-	fclose(fp);
+        /*flush library buffer*/
+        rc = tcdrain(fd);
+        if (rc < 0) {
+            printf("write error handling...\n");
+            return rc; //Finishes the write error handling after the break
+        }
+
+        fclose(image_fp);
+        
+        /*write terminating characters*/
         rc = write(fd, endbuf, 5);
+        if (rc < 0) {
+            printf("write error=%d %s\n", errno, strerror(errno));
+            break;
+        }
 
-	if (rc < 0) {
-                printf("write error=%d %s\n", errno, strerror(errno));
-                break;
-         }
-
-	/*block until all data sent*/
+        /*block until all data sent*/
         rc = tcdrain(fd);
         if (rc < 0) {
             printf("endbuf write error=%d %s\n", errno, strerror(errno));
             break;
         }
-
-        /*clear the data buffer*/
-        //fflush(fp);
-
 
         gettimeofday(&time_end, NULL); //Timing
         printf("all data sent\n");

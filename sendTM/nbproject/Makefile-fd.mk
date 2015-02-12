@@ -23,7 +23,7 @@ AS=as
 # Macros
 CND_PLATFORM=GNU-Linux-x86
 CND_DLIB_EXT=so
-CND_CONF=Debug
+CND_CONF=fd
 CND_DISTDIR=dist
 CND_BUILDDIR=build
 
@@ -39,7 +39,7 @@ OBJECTFILES= \
 
 
 # C Compiler Flags
-CFLAGS=-Werror -Wall
+CFLAGS=-march=i486 -O2 -Werror -Wall
 
 # CC Compiler Flags
 CCFLAGS=
